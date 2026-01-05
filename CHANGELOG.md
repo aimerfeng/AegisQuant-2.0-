@@ -257,3 +257,75 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - `cancel_order()` -> `EngineError`
   - 📝 添加架构审计文档: docs/audit/2026-01-05-task4-adapter-audit.md
   - 改动文件: core/engine/adapters/veighna_adapter.py
+
+## [Task 7] 数据源插件模块 - 2026-01-05
+
+### Added
+- [Task 7.1] 实现 AbstractDataProvider 接口
+  - 创建 core/data/provider.py
+  - 实现 ProviderStatus 枚举 (DISCONNECTED, CONNECTING, CONNECTED, ERROR)
+  - 实现 HistoryRequest dataclass (历史数据请求参数)
+  - 实现 ProviderInfo dataclass (数据源信息)
+  - 实现 AbstractDataProvider 抽象基类:
+    - connect(), disconnect(), is_connected() 连接管理
+    - load_bar_history(), load_tick_history() 数据加载
+    - get_available_symbols(), get_dominant_contract() 合约查询
+    - download_and_cache() 数据缓存
+    - get_provider_name(), get_provider_info() 元信息
+    - validate_request() 请求验证
+  - 改动文件: core/data/provider.py
+
+- [Task 7.2] 实现 ParquetDataProvider
+  - 创建 core/data/providers/parquet_provider.py
+  - 实现本地 Parquet 文件数据源
+  - 支持 Bar 和 Tick 数据加载
+  - 支持按日期范围过滤
+  - 支持获取可用交易所、合约、时间间隔列表
+  - 支持获取数据时间范围
+  - 改动文件: core/data/providers/parquet_provider.py
+
+- [Task 7.3] 实现 MySQLDataProvider
+  - 创建 core/data/providers/mysql_provider.py
+  - 实现 MySQL 数据源连接和查询
+  - 支持 pymysql 可选依赖 (未安装时提示安装)
+  - 支持自定义表名 (bar_table, tick_table)
+  - 支持 Bar 和 Tick 数据加载
+  - 支持主力合约查询 (基于成交量)
+  - 支持数据下载并缓存为 Parquet
+  - 改动文件: core/data/providers/mysql_provider.py
+
+- [Task 7.4] 实现 MongoDBDataProvider
+  - 创建 core/data/providers/mongodb_provider.py
+  - 实现 MongoDB 数据源连接和查询
+  - 支持 pymongo 可选依赖 (未安装时提示安装)
+  - 支持用户名/密码认证
+  - 支持自定义集合名 (bar_collection, tick_collection)
+  - 支持 Bar 和 Tick 数据加载
+  - 支持主力合约查询 (基于聚合管道)
+  - 支持创建推荐索引 (create_indexes)
+  - 支持 L2 数据 (嵌套文档)
+  - 改动文件: core/data/providers/mongodb_provider.py
+
+- [Task 7.5] 实现数据源管理器
+  - 创建 core/data/provider_manager.py
+  - 实现 ProviderConfig dataclass (数据源配置)
+  - 实现 DataProviderManager 类:
+    - 内置 parquet, mysql, mongodb 三种数据源类型
+    - register_provider_type() 注册自定义数据源类型
+    - add_provider(), remove_provider() 管理数据源实例
+    - connect(), disconnect(), switch_provider() 连接管理
+    - load_bar_history(), load_tick_history() 统一数据加载接口
+    - get_available_symbols(), get_dominant_contract() 统一查询接口
+    - export_configs(), import_configs() 配置导入导出
+  - 实现全局管理器实例 (get_provider_manager, reset_provider_manager)
+  - 改动文件: core/data/provider_manager.py
+
+- 更新 core/data/providers/__init__.py 导出所有数据源
+  - 导出: ParquetDataProvider, MySQLDataProvider, MongoDBDataProvider
+  - 改动文件: core/data/providers/__init__.py
+
+- 更新 core/data/__init__.py 导出数据源相关类型
+  - 导出: ProviderStatus, HistoryRequest, ProviderInfo, AbstractDataProvider
+  - 导出: ProviderConfig, DataProviderManager, get_provider_manager, reset_provider_manager
+  - 导出: ParquetDataProvider, MySQLDataProvider, MongoDBDataProvider
+  - 改动文件: core/data/__init__.py

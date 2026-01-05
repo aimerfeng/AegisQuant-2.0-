@@ -1,7 +1,7 @@
 """
 Data Governance and Provider Module
 
-This module provides data import, cleaning, and storage functionality
+This module provides data import, cleaning, storage, and provider functionality
 for the Titan-Quant system.
 """
 from core.data.importer import DataFormat, DataImporter, import_data
@@ -20,6 +20,23 @@ from core.data.storage import (
     BAR_REQUIRED_COLUMNS,
     StorageConfig,
     ParquetStorage,
+)
+from core.data.provider import (
+    ProviderStatus,
+    HistoryRequest,
+    ProviderInfo,
+    AbstractDataProvider,
+)
+from core.data.provider_manager import (
+    ProviderConfig,
+    DataProviderManager,
+    get_provider_manager,
+    reset_provider_manager,
+)
+from core.data.providers import (
+    ParquetDataProvider,
+    MySQLDataProvider,
+    MongoDBDataProvider,
 )
 
 __all__ = [
@@ -41,4 +58,18 @@ __all__ = [
     "BAR_REQUIRED_COLUMNS",
     "StorageConfig",
     "ParquetStorage",
+    # Provider Interface
+    "ProviderStatus",
+    "HistoryRequest",
+    "ProviderInfo",
+    "AbstractDataProvider",
+    # Provider Manager
+    "ProviderConfig",
+    "DataProviderManager",
+    "get_provider_manager",
+    "reset_provider_manager",
+    # Provider Implementations
+    "ParquetDataProvider",
+    "MySQLDataProvider",
+    "MongoDBDataProvider",
 ]
