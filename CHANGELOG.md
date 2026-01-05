@@ -62,11 +62,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - 测试历史清除后序号继续递增
   - 改动文件: core/engine/event.py, core/engine/event_bus.py, core/engine/__init__.py, tests/test_event_bus.py
 
-### Changed
-- N/A
-
 ### Fixed
-- N/A
+- [Architecture Audit] EventBus 关键修复
+  - 🔴 **时间确定性修复**: `publish()` 方法现在接受可选的 `timestamp` 参数
+    - 回测时必须注入模拟时间，确保确定性重放
+    - 不提供时 timestamp 时默认使用 wall-clock 时间
+  - 🟡 **性能优化**: 事件历史存储从 `list` 切换为 `collections.deque`
+    - 旧实现使用 list slicing 是 O(N) 操作
+    - 新实现使用 deque(maxlen=N) 在 C 层实现 O(1) 淘汰
+  - 🟡 **文档澄清**: 明确 EventBus 内存历史是"热缓冲区"
+    - 用于 UI 追赶和短期回放
+    - 完整崩溃恢复需要 Snapshot 机制 (Task 9) 或 EventPersister
+  - 新增测试: `test_timestamp_injection_for_backtesting`
+  - 新增测试: `test_timestamp_defaults_to_now_when_not_provided`
+  - 改动文件: core/engine/event_bus.py, tests/test_event_bus.py
 
 ### Removed
 - N/A

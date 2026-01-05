@@ -177,6 +177,45 @@ class TestEventBusBasicFunctionality:
         
         bus.unsubscribe(sub_id)
     
+    def test_timestamp_injection_for_backtesting(self) -> None:
+        """Test that simulation timestamps can be injected for deterministic backtesting."""
+        bus = EventBus()
+        received_events: list[Event] = []
+        
+        def handler(event: Event) -> None:
+            received_events.append(event)
+        
+        sub_id = bus.subscribe(EventType.TICK, handler)
+        
+        # Inject a specific simulation timestamp (critical for backtesting)
+        sim_time = datetime(2024, 1, 15, 10, 30, 0)
+        bus.publish(EventType.TICK, {"price": 100}, "backtest_engine", timestamp=sim_time)
+        
+        assert len(received_events) == 1
+        assert received_events[0].timestamp == sim_time
+        
+        # Verify determinism: same timestamp on different runs
+        sim_time_2 = datetime(2024, 1, 15, 10, 31, 0)
+        bus.publish(EventType.TICK, {"price": 101}, "backtest_engine", timestamp=sim_time_2)
+        
+        assert received_events[1].timestamp == sim_time_2
+        
+        bus.unsubscribe(sub_id)
+    
+    def test_timestamp_defaults_to_now_when_not_provided(self) -> None:
+        """Test that timestamp defaults to wall-clock time when not injected."""
+        bus = EventBus()
+        
+        before = datetime.now()
+        bus.publish(EventType.TICK, {"price": 100}, "test")
+        after = datetime.now()
+        
+        history = bus.get_event_history()
+        assert len(history) == 1
+        
+        # Timestamp should be between before and after
+        assert before <= history[0].timestamp <= after
+    
     def test_unsubscribe_stops_receiving_events(self) -> None:
         """Test that unsubscribed handlers don't receive events."""
         bus = EventBus()

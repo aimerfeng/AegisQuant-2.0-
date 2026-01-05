@@ -9,15 +9,20 @@ snapshot restoration.
 Requirements:
     - 1.6: Event_Bus SHALL 保证事件处理的顺序确定性
     - 1.7: Event_Bus SHALL 使用单调递增的事件序号标识每个事件，支持事件回溯和重放
+
+Note on Event History:
+    The in-memory event history is a "hot buffer" for UI catch-up and short-term
+    replay. For full crash recovery from sequence 0, use the Snapshot mechanism
+    (Task 9) or implement an EventPersister to Parquet/SQLite.
 """
 from __future__ import annotations
 
 import threading
 import uuid
 from abc import ABC, abstractmethod
-from collections import defaultdict
+from collections import defaultdict, deque
 from datetime import datetime
-from typing import Any, Callable
+from typing import Any, Callable, Optional
 
 from core.engine.event import Event, EventType
 from core.exceptions import EngineError, ErrorCodes
@@ -40,7 +45,13 @@ class IEventBus(ABC):
     """
     
     @abstractmethod
-    def publish(self, event_type: EventType, data: Any, source: str) -> int:
+    def publish(
+        self,
+        event_type: EventType,
+        data: Any,
+        source: str,
+        timestamp: Optional[datetime] = None,
+    ) -> int:
         """
         Publish an event to the bus.
         
@@ -48,6 +59,10 @@ class IEventBus(ABC):
             event_type: The type of event being published.
             data: The event payload data.
             source: Identifier of the component publishing the event.
+            timestamp: Optional simulation timestamp. If None, uses current
+                wall-clock time. For backtesting, this MUST be the simulation
+                time (e.g., the timestamp of the Tick/Bar being processed)
+                to ensure deterministic replay.
         
         Returns:
             The sequence number assigned to the published event.
@@ -88,7 +103,7 @@ class IEventBus(ABC):
         
         Returns:
             The sequence number of the last published event,
-            or -1 if no events have been published.
+            or 0 if no events have been published.
         """
         pass
     
@@ -123,18 +138,23 @@ class EventBus(IEventBus):
     This implementation guarantees:
     - Monotonically increasing sequence numbers for all events
     - Thread-safe publish and subscribe operations
-    - Event history for replay functionality
+    - Event history for replay functionality (hot buffer)
     - Deterministic event ordering
+    - Support for simulation timestamps (critical for backtesting)
     
-    The EventBus maintains an internal event history that can be used
-    for debugging, snapshot creation, and state restoration.
+    The EventBus maintains an internal event history (using deque for O(1)
+    eviction) that can be used for debugging, snapshot creation, and
+    short-term state restoration. For full crash recovery, use the
+    Snapshot mechanism or an external EventPersister.
     
     Example:
         >>> bus = EventBus()
         >>> def handler(event: Event):
         ...     print(f"Received: {event.data}")
         >>> sub_id = bus.subscribe(EventType.TICK, handler)
-        >>> seq = bus.publish(EventType.TICK, {"price": 100}, "test")
+        >>> # For backtesting, inject simulation time:
+        >>> sim_time = datetime(2024, 1, 15, 10, 30, 0)
+        >>> seq = bus.publish(EventType.TICK, {"price": 100}, "test", timestamp=sim_time)
         Received: {'price': 100}
         >>> bus.unsubscribe(sub_id)
         True
@@ -145,19 +165,22 @@ class EventBus(IEventBus):
         Initialize the Event Bus.
         
         Args:
-            max_history_size: Maximum number of events to keep in history.
-                Older events are discarded when this limit is reached.
-                Default is 10000 events.
+            max_history_size: Maximum number of events to keep in the hot
+                buffer. Older events are automatically discarded (O(1) via
+                deque). Default is 10000 events.
+                
+                Note: This is a hot buffer for UI catch-up. For full crash
+                recovery from sequence 0, use Snapshot or EventPersister.
         """
         self._lock = threading.RLock()
         self._sequence_counter: int = 0
         self._max_history_size = max_history_size
         
-        # Event history for replay functionality
-        self._event_history: list[Event] = []
+        # Event history using deque for O(1) eviction at C level
+        self._event_history: deque[Event] = deque(maxlen=max_history_size)
         
         # Pending events queue (events waiting to be processed)
-        self._pending_events: list[Event] = []
+        self._pending_events: deque[Event] = deque()
         
         # Subscribers: event_type -> {subscription_id -> handler}
         self._subscribers: dict[EventType, dict[str, EventHandler]] = defaultdict(dict)
@@ -165,7 +188,13 @@ class EventBus(IEventBus):
         # Reverse mapping: subscription_id -> event_type
         self._subscription_types: dict[str, EventType] = {}
     
-    def publish(self, event_type: EventType, data: Any, source: str) -> int:
+    def publish(
+        self,
+        event_type: EventType,
+        data: Any,
+        source: str,
+        timestamp: Optional[datetime] = None,
+    ) -> int:
         """
         Publish an event to the bus with automatic sequence number assignment.
         
@@ -176,6 +205,9 @@ class EventBus(IEventBus):
             event_type: The type of event being published.
             data: The event payload data.
             source: Identifier of the component publishing the event.
+            timestamp: Optional simulation timestamp. If None, uses current
+                wall-clock time. For backtesting, this MUST be the simulation
+                time to ensure deterministic replay.
         
         Returns:
             The sequence number assigned to the published event.
@@ -188,20 +220,21 @@ class EventBus(IEventBus):
             self._sequence_counter += 1
             sequence_number = self._sequence_counter
             
+            # Use provided timestamp or fall back to wall-clock time
+            # For backtesting: Engine/ReplayController injects simulation time
+            event_timestamp = timestamp if timestamp is not None else datetime.now()
+            
             # Create the event
             event = Event(
                 sequence_number=sequence_number,
                 event_type=event_type,
-                timestamp=datetime.now(),
+                timestamp=event_timestamp,
                 data=data,
                 source=source,
             )
             
-            # Add to history (with size limit)
+            # Add to history (deque handles eviction automatically in O(1))
             self._event_history.append(event)
-            if len(self._event_history) > self._max_history_size:
-                # Remove oldest events
-                self._event_history = self._event_history[-self._max_history_size:]
             
             # Get handlers for this event type
             handlers = list(self._subscribers[event_type].values())
@@ -289,6 +322,9 @@ class EventBus(IEventBus):
         or equal to the specified sequence number. Events are returned
         in order of their sequence numbers.
         
+        Note: Only events within the hot buffer (max_history_size) are
+        available. For full replay from sequence 0, use Snapshot restoration.
+        
         Args:
             sequence_number: The sequence number to start replay from.
         
@@ -316,7 +352,7 @@ class EventBus(IEventBus):
     
     def get_event_history(self) -> list[Event]:
         """
-        Get the complete event history.
+        Get the complete event history from the hot buffer.
         
         Returns:
             List of all events in the history buffer.
