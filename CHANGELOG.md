@@ -79,3 +79,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 - N/A
+
+## [Task 4] 引擎适配器模块 - 2026-01-05
+
+### Added
+- [Task 4.1] 实现数据类型定义
+  - 创建 core/engine/types.py
+  - 实现 BarData dataclass (K线数据: symbol, exchange, datetime, interval, OHLCV)
+  - 实现 TickData dataclass (Tick数据: L1/L2 订单簿支持)
+  - 实现 OrderData dataclass (订单数据: 支持手动/自动单标记)
+  - 实现 Direction, Offset, OrderStatus, Interval 枚举
+  - 支持 to_dict() 和 from_dict() 序列化方法
+  - 改动文件: core/engine/types.py
+
+- [Task 4.2] 实现 IEngineAdapter 接口
+  - 创建 core/engine/adapter.py
+  - 定义 IEngineAdapter 抽象基类
+  - 实现 EngineState, BacktestMode 枚举
+  - 实现 EngineConfig, BacktestResult dataclass
+  - 定义完整的引擎适配器接口方法:
+    - initialize(), load_strategy(), unload_strategy()
+    - start_backtest(), pause(), resume(), step(), stop()
+    - submit_order(), cancel_order(), get_order()
+    - get_positions(), get_account(), get_backtest_result()
+    - register_callback(), unregister_callback()
+  - 改动文件: core/engine/adapter.py
+
+- [Task 4.3] 实现 VeighNa 适配器
+  - 创建 core/engine/adapters/veighna_adapter.py
+  - 实现 VeighNaAdapter 类继承 IEngineAdapter
+  - 支持 VeighNa 可选依赖 (未安装时以 stub 模式运行)
+  - 实现完整的引擎生命周期管理
+  - 实现订单管理和回调机制
+  - 更新 core/engine/__init__.py 导出新类型
+  - 更新 core/engine/adapters/__init__.py 导出 VeighNaAdapter
+  - 改动文件: core/engine/adapters/veighna_adapter.py, core/engine/adapters/__init__.py, core/engine/__init__.py
