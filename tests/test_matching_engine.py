@@ -12,6 +12,7 @@ Property 13: Trade Record Completeness
 Validates: Requirements 7.5
 """
 from datetime import datetime
+from decimal import Decimal
 
 import pytest
 from hypothesis import given, settings, strategies as st
@@ -139,15 +140,17 @@ class TestTradeRecordCompleteness:
         engine = MatchingEngine(config)
         
         # Generate order that will be filled
+        # Use Decimal arithmetic for price calculation
+        order_price = Decimal("0") if is_market else tick.ask_price_1 * Decimal("1.01")
         order = OrderData(
             order_id="test_order_001",
             symbol=tick.symbol,
             exchange=tick.exchange,
             direction="LONG" if is_market else "LONG",
             offset="OPEN",
-            price=0.0 if is_market else tick.ask_price_1 * 1.01,  # Market or limit crossing spread
-            volume=1.0,
-            traded=0.0,
+            price=order_price,  # Market or limit crossing spread
+            volume=Decimal("1.0"),
+            traded=Decimal("0"),
             status="PENDING",
             is_manual=False,
             create_time=datetime.now(),
@@ -307,9 +310,9 @@ class TestTradeRecordCompleteness:
         assert isinstance(trade.is_manual, bool), \
             f"is_manual must be bool, got {type(trade.is_manual)}"
         
-        # Verify turnover calculation
+        # Verify turnover calculation (using Decimal comparison)
         expected_turnover = trade.price * trade.volume
-        assert abs(trade.turnover - expected_turnover) < 0.01, \
+        assert abs(float(trade.turnover) - float(expected_turnover)) < 0.01, \
             f"turnover should be price * volume, expected {expected_turnover}, got {trade.turnover}"
 
 
@@ -420,8 +423,8 @@ class TestMatchingEngineBasicFunctionality:
         trades = engine.process_tick(tick)
         
         assert len(trades) == 1
-        expected_commission = 50000.0 * 1.0 * 0.001  # turnover * rate
-        assert abs(trades[0].commission - expected_commission) < 0.01
+        expected_commission = Decimal("50000.0") * Decimal("1.0") * Decimal("0.001")  # turnover * rate
+        assert abs(float(trades[0].commission) - float(expected_commission)) < 0.01
     
     def test_cancel_order(self) -> None:
         """Test order cancellation."""

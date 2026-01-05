@@ -179,7 +179,8 @@ class TestSnapshotRoundTrip:
             assert loaded_snapshot is not None, "Failed to load snapshot"
             
             # Verify all fields match
-            assert loaded_snapshot.version == original_snapshot.version
+            # Note: Version may be upgraded by migration (TD-003), so check it's compatible
+            assert loaded_snapshot.version in manager.COMPATIBLE_VERSIONS
             assert loaded_snapshot.snapshot_id == original_snapshot.snapshot_id
             
             # Account state

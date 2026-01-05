@@ -10,6 +10,11 @@ Requirements:
     - 1.6: Event_Bus SHALL 保证事件处理的顺序确定性
     - 1.7: Event_Bus SHALL 使用单调递增的事件序号标识每个事件，支持事件回溯和重放
 
+Technical Debt Resolution (TD-004):
+    - Added HeartbeatMonitor for detecting strategy handler blocking >100ms
+    - Watchdog thread monitors handler execution time
+    - Callback mechanism for alerting on slow handlers
+
 Note on Event History:
     The in-memory event history is a "hot buffer" for UI catch-up and short-term
     replay. For full crash recovery from sequence 0, use the Snapshot mechanism
@@ -18,9 +23,11 @@ Note on Event History:
 from __future__ import annotations
 
 import threading
+import time
 import uuid
 from abc import ABC, abstractmethod
 from collections import defaultdict, deque
+from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Callable, Optional
 
@@ -30,6 +37,157 @@ from core.exceptions import EngineError, ErrorCodes
 
 # Type alias for event handlers
 EventHandler = Callable[[Event], None]
+
+# Type alias for slow handler callback
+SlowHandlerCallback = Callable[[str, str, float], None]  # (subscription_id, handler_name, duration_ms)
+
+
+@dataclass
+class HandlerExecutionInfo:
+    """Information about a handler execution for monitoring."""
+    subscription_id: str
+    handler_name: str
+    start_time: float
+    event_type: EventType
+
+
+class HeartbeatMonitor:
+    """
+    Watchdog monitor for detecting slow/blocking event handlers.
+    
+    Technical Debt Resolution (TD-004):
+        Monitors handler execution time and alerts when handlers block >threshold_ms.
+        This prevents silent stalls in the event bus when strategy handlers block.
+    
+    Example:
+        >>> monitor = HeartbeatMonitor(threshold_ms=100)
+        >>> monitor.set_slow_handler_callback(lambda sid, name, dur: print(f"Slow: {name}"))
+        >>> monitor.start()
+        >>> # ... handlers are monitored ...
+        >>> monitor.stop()
+    """
+    
+    def __init__(self, threshold_ms: float = 100.0, check_interval_ms: float = 50.0) -> None:
+        """
+        Initialize the heartbeat monitor.
+        
+        Args:
+            threshold_ms: Threshold in milliseconds for slow handler detection (default: 100ms)
+            check_interval_ms: How often to check for slow handlers (default: 50ms)
+        """
+        self._threshold_ms = threshold_ms
+        self._check_interval_ms = check_interval_ms
+        self._lock = threading.RLock()
+        self._running = False
+        self._monitor_thread: Optional[threading.Thread] = None
+        self._stop_event = threading.Event()
+        
+        # Currently executing handlers
+        self._active_handlers: dict[str, HandlerExecutionInfo] = {}
+        
+        # Callback for slow handler alerts
+        self._slow_handler_callback: Optional[SlowHandlerCallback] = None
+        
+        # Statistics
+        self._slow_handler_count = 0
+        self._total_handler_calls = 0
+    
+    def set_slow_handler_callback(self, callback: SlowHandlerCallback) -> None:
+        """Set callback to be invoked when a slow handler is detected."""
+        self._slow_handler_callback = callback
+    
+    def start(self) -> None:
+        """Start the heartbeat monitor thread."""
+        if self._running:
+            return
+        
+        self._running = True
+        self._stop_event.clear()
+        self._monitor_thread = threading.Thread(
+            target=self._monitor_loop,
+            name="HeartbeatMonitor",
+            daemon=True
+        )
+        self._monitor_thread.start()
+    
+    def stop(self) -> None:
+        """Stop the heartbeat monitor thread."""
+        if not self._running:
+            return
+        
+        self._running = False
+        self._stop_event.set()
+        if self._monitor_thread:
+            self._monitor_thread.join(timeout=1.0)
+            self._monitor_thread = None
+    
+    def handler_started(
+        self, subscription_id: str, handler_name: str, event_type: EventType
+    ) -> None:
+        """Record that a handler has started execution."""
+        with self._lock:
+            self._active_handlers[subscription_id] = HandlerExecutionInfo(
+                subscription_id=subscription_id,
+                handler_name=handler_name,
+                start_time=time.perf_counter(),
+                event_type=event_type,
+            )
+            self._total_handler_calls += 1
+    
+    def handler_finished(self, subscription_id: str) -> Optional[float]:
+        """
+        Record that a handler has finished execution.
+        
+        Returns:
+            Duration in milliseconds, or None if handler wasn't tracked.
+        """
+        with self._lock:
+            info = self._active_handlers.pop(subscription_id, None)
+            if info:
+                duration_ms = (time.perf_counter() - info.start_time) * 1000
+                return duration_ms
+            return None
+    
+    def _monitor_loop(self) -> None:
+        """Background thread that checks for slow handlers."""
+        while not self._stop_event.wait(timeout=self._check_interval_ms / 1000):
+            self._check_slow_handlers()
+    
+    def _check_slow_handlers(self) -> None:
+        """Check for handlers that have exceeded the threshold."""
+        current_time = time.perf_counter()
+        slow_handlers: list[tuple[str, str, float]] = []
+        
+        with self._lock:
+            for sub_id, info in list(self._active_handlers.items()):
+                duration_ms = (current_time - info.start_time) * 1000
+                if duration_ms > self._threshold_ms:
+                    slow_handlers.append((sub_id, info.handler_name, duration_ms))
+        
+        # Invoke callbacks outside the lock
+        for sub_id, handler_name, duration_ms in slow_handlers:
+            self._slow_handler_count += 1
+            if self._slow_handler_callback:
+                try:
+                    self._slow_handler_callback(sub_id, handler_name, duration_ms)
+                except Exception:
+                    pass  # Don't let callback errors affect monitoring
+    
+    def get_statistics(self) -> dict[str, Any]:
+        """Get monitoring statistics."""
+        with self._lock:
+            return {
+                "threshold_ms": self._threshold_ms,
+                "total_handler_calls": self._total_handler_calls,
+                "slow_handler_count": self._slow_handler_count,
+                "active_handlers": len(self._active_handlers),
+                "is_running": self._running,
+            }
+    
+    @property
+    def is_running(self) -> bool:
+        """Check if monitor is running."""
+        return self._running
 
 
 class IEventBus(ABC):
@@ -141,6 +299,7 @@ class EventBus(IEventBus):
     - Event history for replay functionality (hot buffer)
     - Deterministic event ordering
     - Support for simulation timestamps (critical for backtesting)
+    - Heartbeat monitoring for slow handler detection (TD-004)
     
     The EventBus maintains an internal event history (using deque for O(1)
     eviction) that can be used for debugging, snapshot creation, and
@@ -160,7 +319,12 @@ class EventBus(IEventBus):
         True
     """
     
-    def __init__(self, max_history_size: int = 10000) -> None:
+    def __init__(
+        self, 
+        max_history_size: int = 10000,
+        enable_heartbeat: bool = False,
+        heartbeat_threshold_ms: float = 100.0,
+    ) -> None:
         """
         Initialize the Event Bus.
         
@@ -168,6 +332,10 @@ class EventBus(IEventBus):
             max_history_size: Maximum number of events to keep in the hot
                 buffer. Older events are automatically discarded (O(1) via
                 deque). Default is 10000 events.
+            enable_heartbeat: Whether to enable heartbeat monitoring (TD-004).
+                Default is False for backward compatibility.
+            heartbeat_threshold_ms: Threshold for slow handler detection.
+                Default is 100ms.
                 
                 Note: This is a hot buffer for UI catch-up. For full crash
                 recovery from sequence 0, use Snapshot or EventPersister.
@@ -187,6 +355,48 @@ class EventBus(IEventBus):
         
         # Reverse mapping: subscription_id -> event_type
         self._subscription_types: dict[str, EventType] = {}
+        
+        # Handler names for monitoring
+        self._handler_names: dict[str, str] = {}
+        
+        # TD-004: Heartbeat monitor for slow handler detection
+        self._heartbeat_monitor: Optional[HeartbeatMonitor] = None
+        if enable_heartbeat:
+            self._heartbeat_monitor = HeartbeatMonitor(threshold_ms=heartbeat_threshold_ms)
+            self._heartbeat_monitor.start()
+    
+    def set_slow_handler_callback(self, callback: SlowHandlerCallback) -> None:
+        """
+        Set callback for slow handler alerts (TD-004).
+        
+        Args:
+            callback: Function called when a handler exceeds threshold.
+                      Signature: (subscription_id, handler_name, duration_ms) -> None
+        """
+        if self._heartbeat_monitor:
+            self._heartbeat_monitor.set_slow_handler_callback(callback)
+    
+    def enable_heartbeat_monitor(self, threshold_ms: float = 100.0) -> None:
+        """
+        Enable heartbeat monitoring (TD-004).
+        
+        Args:
+            threshold_ms: Threshold for slow handler detection.
+        """
+        if self._heartbeat_monitor is None:
+            self._heartbeat_monitor = HeartbeatMonitor(threshold_ms=threshold_ms)
+        self._heartbeat_monitor.start()
+    
+    def disable_heartbeat_monitor(self) -> None:
+        """Disable heartbeat monitoring."""
+        if self._heartbeat_monitor:
+            self._heartbeat_monitor.stop()
+    
+    def get_heartbeat_statistics(self) -> Optional[dict[str, Any]]:
+        """Get heartbeat monitoring statistics (TD-004)."""
+        if self._heartbeat_monitor:
+            return self._heartbeat_monitor.get_statistics()
+        return None
     
     def publish(
         self,
@@ -237,10 +447,16 @@ class EventBus(IEventBus):
             self._event_history.append(event)
             
             # Get handlers for this event type
-            handlers = list(self._subscribers[event_type].values())
+            handlers = list(self._subscribers[event_type].items())
         
         # Call handlers outside the lock to prevent deadlocks
-        for handler in handlers:
+        for subscription_id, handler in handlers:
+            handler_name = self._handler_names.get(subscription_id, handler.__name__)
+            
+            # TD-004: Track handler execution with heartbeat monitor
+            if self._heartbeat_monitor:
+                self._heartbeat_monitor.handler_started(subscription_id, handler_name, event_type)
+            
             try:
                 handler(event)
             except Exception as e:
@@ -251,9 +467,14 @@ class EventBus(IEventBus):
                     details={
                         "event_type": event_type.value,
                         "sequence_number": sequence_number,
+                        "handler": handler_name,
                         "error": str(e),
                     },
                 )
+            finally:
+                # TD-004: Record handler completion
+                if self._heartbeat_monitor:
+                    self._heartbeat_monitor.handler_finished(subscription_id)
         
         return sequence_number
     
@@ -280,6 +501,8 @@ class EventBus(IEventBus):
         with self._lock:
             self._subscribers[event_type][subscription_id] = handler
             self._subscription_types[subscription_id] = event_type
+            # Store handler name for monitoring (TD-004)
+            self._handler_names[subscription_id] = getattr(handler, "__name__", str(handler))
         
         return subscription_id
     
@@ -300,6 +523,8 @@ class EventBus(IEventBus):
             event_type = self._subscription_types[subscription_id]
             del self._subscribers[event_type][subscription_id]
             del self._subscription_types[subscription_id]
+            # Clean up handler name (TD-004)
+            self._handler_names.pop(subscription_id, None)
             
             return True
     
@@ -403,4 +628,7 @@ __all__ = [
     "IEventBus",
     "EventBus",
     "EventHandler",
+    "SlowHandlerCallback",
+    "HeartbeatMonitor",
+    "HandlerExecutionInfo",
 ]

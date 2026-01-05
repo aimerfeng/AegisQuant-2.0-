@@ -11,6 +11,10 @@ Requirements:
     - 7.3: WHEN 用户选择 L2 撮合, THEN THE Matching_Engine SHALL 在报告中明确标注所使用的模拟等级及其局限性
     - 7.4: WHEN 用户配置回测参数, THEN THE Matching_Engine SHALL 允许设置手续费率和滑点模型
     - 7.5: THE Matching_Engine SHALL 记录每笔成交的详细信息
+
+Technical Debt Resolution (TD-001):
+    - TradeRecord uses Decimal for price/volume/turnover/commission/slippage
+    - All financial calculations use Decimal for production-grade accuracy
 """
 from __future__ import annotations
 
@@ -18,10 +22,11 @@ import uuid
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
+from decimal import Decimal
 from enum import Enum
 from typing import Any, Optional
 
-from core.engine.types import OrderData, TickData
+from core.engine.types import OrderData, TickData, to_decimal
 from core.exceptions import EngineError, ErrorCodes
 
 
@@ -151,16 +156,20 @@ class TradeRecord:
         exchange: Exchange name
         direction: Trade direction ("LONG" or "SHORT")
         offset: Trade offset ("OPEN" or "CLOSE")
-        price: Execution price
-        volume: Executed volume
-        turnover: Trade turnover (price * volume)
-        commission: Commission charged
-        slippage: Slippage incurred
+        price: Execution price (Decimal)
+        volume: Executed volume (Decimal)
+        turnover: Trade turnover (price * volume) (Decimal)
+        commission: Commission charged (Decimal)
+        slippage: Slippage incurred (Decimal)
         matching_mode: Matching mode used
         l2_level: L2 simulation level (if applicable)
         queue_wait_time: Queue wait time in L2 mode (seconds)
         timestamp: Trade execution timestamp
         is_manual: Whether this was a manual trade
+    
+    Note:
+        TD-001 Resolution: price/volume/turnover/commission/slippage use Decimal
+        to avoid IEEE 754 floating-point precision errors in financial calculations.
     """
     trade_id: str
     order_id: str
@@ -168,11 +177,11 @@ class TradeRecord:
     exchange: str
     direction: str
     offset: str
-    price: float
-    volume: float
-    turnover: float
-    commission: float
-    slippage: float
+    price: Decimal
+    volume: Decimal
+    turnover: Decimal
+    commission: Decimal
+    slippage: Decimal
     matching_mode: MatchingMode
     l2_level: Optional[L2SimulationLevel]
     queue_wait_time: Optional[float]
@@ -180,7 +189,14 @@ class TradeRecord:
     is_manual: bool = False
     
     def __post_init__(self) -> None:
-        """Validate trade record after initialization."""
+        """Validate and convert trade record after initialization."""
+        # Convert to Decimal if needed (for backward compatibility with float inputs)
+        self.price = to_decimal(self.price)
+        self.volume = to_decimal(self.volume)
+        self.turnover = to_decimal(self.turnover)
+        self.commission = to_decimal(self.commission)
+        self.slippage = to_decimal(self.slippage)
+        
         if not self.trade_id:
             raise ValueError("trade_id must not be empty")
         if not self.order_id:
@@ -203,7 +219,7 @@ class TradeRecord:
             raise ValueError("slippage must be non-negative")
     
     def to_dict(self) -> dict[str, Any]:
-        """Convert to dictionary for serialization."""
+        """Convert to dictionary for serialization (uses string for Decimal precision)."""
         return {
             "trade_id": self.trade_id,
             "order_id": self.order_id,
@@ -211,11 +227,11 @@ class TradeRecord:
             "exchange": self.exchange,
             "direction": self.direction,
             "offset": self.offset,
-            "price": self.price,
-            "volume": self.volume,
-            "turnover": self.turnover,
-            "commission": self.commission,
-            "slippage": self.slippage,
+            "price": str(self.price),
+            "volume": str(self.volume),
+            "turnover": str(self.turnover),
+            "commission": str(self.commission),
+            "slippage": str(self.slippage),
             "matching_mode": self.matching_mode.value,
             "l2_level": self.l2_level.value if self.l2_level else None,
             "queue_wait_time": self.queue_wait_time,
@@ -233,11 +249,11 @@ class TradeRecord:
             exchange=data["exchange"],
             direction=data["direction"],
             offset=data["offset"],
-            price=data["price"],
-            volume=data["volume"],
-            turnover=data["turnover"],
-            commission=data["commission"],
-            slippage=data["slippage"],
+            price=to_decimal(data["price"]),
+            volume=to_decimal(data["volume"]),
+            turnover=to_decimal(data["turnover"]),
+            commission=to_decimal(data["commission"]),
+            slippage=to_decimal(data["slippage"]),
             matching_mode=MatchingMode(data["matching_mode"]),
             l2_level=L2SimulationLevel(data["l2_level"]) if data.get("l2_level") else None,
             queue_wait_time=data.get("queue_wait_time"),
@@ -495,16 +511,16 @@ class MatchingEngine(IMatchingEngine):
             if fill_price is None:
                 continue
             
-            # Calculate slippage
+            # Calculate slippage (Decimal)
             slippage = self._calculate_slippage(order, tick, fill_price)
             
-            # Apply slippage to fill price
+            # Apply slippage to fill price (Decimal arithmetic)
             if order.direction == "LONG":
                 final_price = fill_price + slippage
             else:
                 final_price = fill_price - slippage
             
-            # Calculate commission
+            # Calculate commission (Decimal)
             turnover = final_price * order.volume
             commission = self._calculate_commission(turnover)
             
@@ -540,8 +556,8 @@ class MatchingEngine(IMatchingEngine):
         self._trades.extend(trades)
         return trades
     
-    def _get_l1_fill_price(self, order: OrderData, tick: TickData) -> Optional[float]:
-        """Get fill price for L1 matching."""
+    def _get_l1_fill_price(self, order: OrderData, tick: TickData) -> Optional[Decimal]:
+        """Get fill price for L1 matching (returns Decimal)."""
         if order.direction == "LONG":
             # Buy orders fill at ask price
             if order.price == 0:  # Market order
@@ -576,16 +592,16 @@ class MatchingEngine(IMatchingEngine):
             
             fill_price, fill_volume = fill_result
             
-            # Calculate slippage
+            # Calculate slippage (Decimal)
             slippage = self._calculate_slippage(order, tick, fill_price)
             
-            # Apply slippage
+            # Apply slippage (Decimal arithmetic)
             if order.direction == "LONG":
                 final_price = fill_price + slippage
             else:
                 final_price = fill_price - slippage
             
-            # Calculate commission
+            # Calculate commission (Decimal)
             turnover = final_price * fill_volume
             commission = self._calculate_commission(turnover)
             
@@ -690,12 +706,12 @@ class MatchingEngine(IMatchingEngine):
     
     def _check_l2_fill(
         self, order: OrderData, tick: TickData, queue_wait_time: float
-    ) -> Optional[tuple[float, float]]:
+    ) -> Optional[tuple[Decimal, Decimal]]:
         """
         Check if order can be filled in L2 mode.
         
         Returns:
-            Tuple of (fill_price, fill_volume) or None if no fill.
+            Tuple of (fill_price, fill_volume) as Decimals or None if no fill.
         """
         # Market orders always fill
         if order.price == 0:
@@ -742,45 +758,51 @@ class MatchingEngine(IMatchingEngine):
             return queue_wait_time >= min_wait_time * 2 and tick.volume > order.volume
     
     def _calculate_slippage(
-        self, order: OrderData, tick: TickData, base_price: float
-    ) -> float:
-        """Calculate slippage based on configured model."""
+        self, order: OrderData, tick: TickData, base_price: Decimal
+    ) -> Decimal:
+        """Calculate slippage based on configured model (returns Decimal)."""
+        slippage_value = to_decimal(self._config.slippage_value)
+        
         if self._config.slippage_model == SlippageModel.FIXED:
-            return self._config.slippage_value * base_price
+            return slippage_value * base_price
         
         elif self._config.slippage_model == SlippageModel.VOLUME_BASED:
             # Slippage increases with order size relative to market volume
             if tick.volume > 0:
                 volume_ratio = order.volume / tick.volume
-                return self._config.slippage_value * base_price * (1 + volume_ratio)
-            return self._config.slippage_value * base_price
+                return slippage_value * base_price * (Decimal("1") + volume_ratio)
+            return slippage_value * base_price
         
         elif self._config.slippage_model == SlippageModel.VOLATILITY_BASED:
             # Slippage based on spread as volatility proxy
-            spread_ratio = tick.spread / tick.mid_price if tick.mid_price > 0 else 0
-            return self._config.slippage_value * base_price * (1 + spread_ratio * 10)
+            spread_ratio = tick.spread / tick.mid_price if tick.mid_price > 0 else Decimal("0")
+            return slippage_value * base_price * (Decimal("1") + spread_ratio * Decimal("10"))
         
-        return 0.0
+        return Decimal("0")
     
-    def _calculate_commission(self, turnover: float) -> float:
-        """Calculate commission for a trade."""
-        commission = turnover * self._config.commission_rate
-        return max(commission, self._config.min_commission)
+    def _calculate_commission(self, turnover: Decimal) -> Decimal:
+        """Calculate commission for a trade (returns Decimal)."""
+        commission_rate = to_decimal(self._config.commission_rate)
+        min_commission = to_decimal(self._config.min_commission)
+        commission = turnover * commission_rate
+        return max(commission, min_commission)
     
     def _update_metrics_for_trade(self, trade: TradeRecord) -> None:
-        """Update metrics after a trade."""
-        self._metrics.total_turnover += trade.turnover
-        self._metrics.total_commission += trade.commission
+        """Update metrics after a trade (handles Decimal values)."""
+        # Convert Decimal to float for metrics (metrics use float for simplicity)
+        self._metrics.total_turnover += float(trade.turnover)
+        self._metrics.total_commission += float(trade.commission)
         
         # Update slippage metrics
-        if self._metrics.max_slippage < trade.slippage:
-            self._metrics.max_slippage = trade.slippage
+        trade_slippage = float(trade.slippage)
+        if self._metrics.max_slippage < trade_slippage:
+            self._metrics.max_slippage = trade_slippage
         
         # Update average slippage
         n = len(self._trades)
         if n > 0:
             self._metrics.avg_slippage = (
-                (self._metrics.avg_slippage * (n - 1) + trade.slippage) / n
+                (self._metrics.avg_slippage * (n - 1) + trade_slippage) / n
             )
         
         # Update queue wait time metrics (L2 only)
@@ -800,18 +822,18 @@ class MatchingEngine(IMatchingEngine):
                 )
         
         # Update fill rate
-        total_volume = sum(t.volume for t in self._trades)
+        total_volume = sum(float(t.volume) for t in self._trades)
         total_order_volume = total_volume + sum(
-            o.remaining for o in self._pending_orders.values()
+            float(o.remaining) for o in self._pending_orders.values()
         )
         if total_order_volume > 0:
             self._metrics.fill_rate = total_volume / total_order_volume
     
     def get_quality_metrics(self) -> MatchingQualityMetrics:
         """Get matching quality metrics."""
-        # Calculate slippage distribution
+        # Calculate slippage distribution (convert Decimal to float for metrics)
         if self._trades:
-            slippages = sorted([t.slippage for t in self._trades])
+            slippages = sorted([float(t.slippage) for t in self._trades])
             n = len(slippages)
             self._metrics.slippage_distribution = {
                 "p25": slippages[int(n * 0.25)] if n > 0 else 0.0,

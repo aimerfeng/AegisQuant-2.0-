@@ -10,6 +10,11 @@ Requirements:
     - 5.6: WHEN 用户加载快照, THEN THE Replay_Controller SHALL 完整恢复上述所有状态
     - 5.7: THE Snapshot SHALL 包含版本号，WHEN 快照版本与当前系统版本不兼容, 
            THEN THE Replay_Controller SHALL 拒绝加载并提示用户
+
+Technical Debt Resolution (TD-003):
+    - Added version-aware serialization with schema migration support
+    - Implemented field defaults for backward compatibility
+    - Added migration converters for version upgrades
 """
 from __future__ import annotations
 
@@ -19,9 +24,13 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field, asdict
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 from core.exceptions import SnapshotError, ErrorCodes
+
+
+# Type alias for migration functions
+MigrationFunc = Callable[[Dict[str, Any]], Dict[str, Any]]
 
 
 @dataclass
@@ -423,6 +432,11 @@ class SnapshotManager(ISnapshotManager):
     Provides functionality for creating, saving, loading, and validating
     system state snapshots. Uses JSON serialization for storage.
     
+    Technical Debt Resolution (TD-003):
+        - Version-aware serialization with migration support
+        - Automatic schema migration when loading older snapshots
+        - Field defaults for backward compatibility
+    
     Example:
         >>> manager = SnapshotManager()
         >>> snapshot = manager.create_snapshot(
@@ -442,11 +456,82 @@ class SnapshotManager(ISnapshotManager):
     """
     
     # Compatible versions (can load snapshots from these versions)
-    COMPATIBLE_VERSIONS = {"1.0.0"}
+    COMPATIBLE_VERSIONS = {"1.0.0", "1.1.0"}
+    
+    # Migration functions: source_version -> migration_func
+    # Each migration function transforms data from source_version to the next version
+    _MIGRATIONS: Dict[str, MigrationFunc] = {}
     
     def __init__(self) -> None:
         """Initialize the Snapshot Manager."""
-        pass
+        # Register default migrations
+        self._register_default_migrations()
+    
+    def _register_default_migrations(self) -> None:
+        """Register default version migration functions."""
+        # Migration from 1.0.0 to 1.1.0 (example - adds new fields with defaults)
+        def migrate_1_0_0_to_1_1_0(data: Dict[str, Any]) -> Dict[str, Any]:
+            """Migrate snapshot from 1.0.0 to 1.1.0."""
+            # Add new fields with defaults if they don't exist
+            if "account" in data:
+                account = data["account"]
+                if "total_equity" not in account:
+                    account["total_equity"] = account.get("cash", 0.0)
+                if "unrealized_pnl" not in account:
+                    account["unrealized_pnl"] = 0.0
+            
+            # Add margin field to positions if missing
+            if "positions" in data:
+                for pos in data["positions"]:
+                    if "margin" not in pos:
+                        pos["margin"] = 0.0
+                    if "open_time" not in pos:
+                        pos["open_time"] = None
+            
+            # Update version
+            data["version"] = "1.1.0"
+            return data
+        
+        self._MIGRATIONS["1.0.0"] = migrate_1_0_0_to_1_1_0
+    
+    def register_migration(self, from_version: str, migration_func: MigrationFunc) -> None:
+        """
+        Register a custom migration function.
+        
+        Args:
+            from_version: Source version to migrate from
+            migration_func: Function that transforms data dict to next version
+        """
+        self._MIGRATIONS[from_version] = migration_func
+    
+    def _apply_migrations(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Apply necessary migrations to bring snapshot to current version.
+        
+        Args:
+            data: Snapshot data dictionary
+        
+        Returns:
+            Migrated data dictionary at current version
+        """
+        current_version = data.get("version", "1.0.0")
+        
+        # Define version order for migration path
+        version_order = ["1.0.0", "1.1.0"]
+        
+        try:
+            current_idx = version_order.index(current_version)
+        except ValueError:
+            # Unknown version, return as-is
+            return data
+        
+        # Apply migrations in order
+        for i in range(current_idx, len(version_order) - 1):
+            from_ver = version_order[i]
+            if from_ver in self._MIGRATIONS:
+                data = self._MIGRATIONS[from_ver](data)
+        
+        return data
     
     def create_snapshot(
         self,
@@ -541,7 +626,7 @@ class SnapshotManager(ISnapshotManager):
     
     def load_snapshot(self, path: str) -> Optional[Snapshot]:
         """
-        Load a snapshot from disk.
+        Load a snapshot from disk with automatic version migration.
         
         Args:
             path: File path to load the snapshot from
@@ -551,6 +636,9 @@ class SnapshotManager(ISnapshotManager):
         
         Raises:
             SnapshotError: If load operation fails or data is corrupted.
+        
+        Technical Debt Resolution (TD-003):
+            Automatically applies version migrations when loading older snapshots.
         """
         file_path = Path(path)
         
@@ -561,18 +649,23 @@ class SnapshotManager(ISnapshotManager):
             with open(file_path, "r", encoding="utf-8") as f:
                 snapshot_dict = json.load(f)
             
+            # Apply migrations if needed (TD-003)
+            original_version = snapshot_dict.get("version", "1.0.0")
+            snapshot_dict = self._apply_migrations(snapshot_dict)
+            
             snapshot = Snapshot.from_dict(snapshot_dict)
             
-            # Check version compatibility
+            # Check version compatibility (after migration)
             if not self.is_compatible(snapshot):
                 raise SnapshotError(
-                    message=f"Snapshot version {snapshot.version} is not compatible "
+                    message=f"Snapshot version {original_version} is not compatible "
                             f"with current version {self.CURRENT_VERSION}",
                     error_code=ErrorCodes.SNAPSHOT_VERSION_MISMATCH,
                     snapshot_id=snapshot.snapshot_id,
-                    snapshot_version=snapshot.version,
+                    snapshot_version=original_version,
                     details={
-                        "snapshot_version": snapshot.version,
+                        "snapshot_version": original_version,
+                        "migrated_version": snapshot.version,
                         "current_version": self.CURRENT_VERSION,
                         "compatible_versions": list(self.COMPATIBLE_VERSIONS),
                     },

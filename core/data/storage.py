@@ -6,6 +6,10 @@ It implements organized storage by exchange/contract/period with proper schemas
 for Tick and Bar data.
 
 Requirements: 2.6 - Store cleaned data as Parquet format, classified by date/contract
+
+Technical Debt Resolution (TD-002):
+    - Added streaming generators (iter_bars, iter_ticks) to avoid OOM on large datasets
+    - Supports chunk-based loading with configurable chunk size
 """
 from __future__ import annotations
 
@@ -13,7 +17,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterator, Generator
 
 import pandas as pd
 
@@ -318,6 +322,157 @@ class ParquetStorage:
                 "bars": self.list_exchanges(DataType.BAR),
             },
         }
+    
+    # =========================================================================
+    # TD-002 Resolution: Streaming Generators for Large Datasets
+    # =========================================================================
+    
+    def iter_bar_data(
+        self,
+        exchange: str,
+        symbol: str,
+        interval: str | BarInterval,
+        chunk_size: int = 10000,
+        filters: list[tuple[str, str, Any]] | None = None,
+    ) -> Generator[pd.DataFrame, None, None]:
+        """
+        Stream bar data in chunks to avoid OOM on large datasets.
+        
+        Args:
+            exchange: Exchange name
+            symbol: Symbol name
+            interval: Bar interval (e.g., '1m', '1h', '1d')
+            chunk_size: Number of rows per chunk (default: 10000)
+            filters: Optional PyArrow filters for predicate pushdown
+        
+        Yields:
+            DataFrame chunks of bar data
+        
+        Example:
+            for chunk in storage.iter_bar_data("binance", "btc_usdt", "1m"):
+                for row in chunk.itertuples():
+                    process_bar(row)
+        
+        Technical Debt Resolution (TD-002):
+            This method enables streaming large datasets without loading
+            everything into memory, preventing OOM crashes on workstations.
+        """
+        file_path = self._get_bar_path(exchange, symbol, interval)
+        
+        if not file_path.exists():
+            raise DataError(
+                message=f"Bar data not found: {file_path}",
+                error_code=ErrorCodes.DATA_IMPORT_FAILED,
+                file_path=str(file_path),
+            )
+        
+        try:
+            import pyarrow.parquet as pq
+            
+            # Open parquet file for streaming
+            parquet_file = pq.ParquetFile(file_path)
+            
+            # Read in batches
+            for batch in parquet_file.iter_batches(batch_size=chunk_size):
+                df = batch.to_pandas()
+                if filters:
+                    # Apply filters manually for streaming (predicate pushdown not available in iter_batches)
+                    for col, op, val in filters:
+                        if col in df.columns:
+                            if op == "==":
+                                df = df[df[col] == val]
+                            elif op == "!=":
+                                df = df[df[col] != val]
+                            elif op == ">":
+                                df = df[df[col] > val]
+                            elif op == ">=":
+                                df = df[df[col] >= val]
+                            elif op == "<":
+                                df = df[df[col] < val]
+                            elif op == "<=":
+                                df = df[df[col] <= val]
+                if not df.empty:
+                    yield df
+                    
+        except ImportError:
+            # Fallback to pandas chunked reading if pyarrow not available
+            for chunk in pd.read_parquet(file_path, engine='pyarrow').groupby(
+                pd.RangeIndex(len(pd.read_parquet(file_path))) // chunk_size
+            ):
+                yield chunk[1]
+    
+    def iter_tick_data(
+        self,
+        exchange: str,
+        symbol: str,
+        date: str,
+        chunk_size: int = 10000,
+        filters: list[tuple[str, str, Any]] | None = None,
+    ) -> Generator[pd.DataFrame, None, None]:
+        """
+        Stream tick data in chunks to avoid OOM on large datasets.
+        
+        Args:
+            exchange: Exchange name
+            symbol: Symbol name
+            date: Date string (YYYY-MM-DD)
+            chunk_size: Number of rows per chunk (default: 10000)
+            filters: Optional PyArrow filters for predicate pushdown
+        
+        Yields:
+            DataFrame chunks of tick data
+        
+        Example:
+            for chunk in storage.iter_tick_data("binance", "btc_usdt", "2024-01-15"):
+                for row in chunk.itertuples():
+                    process_tick(row)
+        
+        Technical Debt Resolution (TD-002):
+            This method enables streaming large tick datasets without loading
+            everything into memory, preventing OOM crashes on workstations.
+        """
+        file_path = self._get_tick_path(exchange, symbol, date)
+        
+        if not file_path.exists():
+            raise DataError(
+                message=f"Tick data not found: {file_path}",
+                error_code=ErrorCodes.DATA_IMPORT_FAILED,
+                file_path=str(file_path),
+            )
+        
+        try:
+            import pyarrow.parquet as pq
+            
+            # Open parquet file for streaming
+            parquet_file = pq.ParquetFile(file_path)
+            
+            # Read in batches
+            for batch in parquet_file.iter_batches(batch_size=chunk_size):
+                df = batch.to_pandas()
+                if filters:
+                    # Apply filters manually for streaming
+                    for col, op, val in filters:
+                        if col in df.columns:
+                            if op == "==":
+                                df = df[df[col] == val]
+                            elif op == "!=":
+                                df = df[df[col] != val]
+                            elif op == ">":
+                                df = df[df[col] > val]
+                            elif op == ">=":
+                                df = df[df[col] >= val]
+                            elif op == "<":
+                                df = df[df[col] < val]
+                            elif op == "<=":
+                                df = df[df[col] <= val]
+                if not df.empty:
+                    yield df
+                    
+        except ImportError:
+            # Fallback to pandas chunked reading if pyarrow not available
+            df = pd.read_parquet(file_path)
+            for i in range(0, len(df), chunk_size):
+                yield df.iloc[i:i + chunk_size]
 
 
 __all__ = [

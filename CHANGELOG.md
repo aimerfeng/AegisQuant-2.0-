@@ -7,6 +7,64 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Technical Debt Resolution (2026-01-05)
+
+#### TD-001: Decimal Migration for Financial Precision (HIGH Priority) ✅
+- **Problem**: Matching Engine 使用 Python `float` 导致 IEEE 754 浮点精度误差
+- **Solution**: 迁移到 `decimal.Decimal` 进行所有金融计算
+- **Changes**:
+  - `core/engine/types.py`:
+    - `BarData`: 所有价格/成交量字段改为 Decimal
+    - `TickData`: 所有价格/成交量字段改为 Decimal
+    - `OrderData`: price/volume/traded 字段改为 Decimal
+    - 添加 `to_decimal()` 辅助函数支持向后兼容
+    - 序列化使用字符串保持精度
+  - `core/engine/matching.py`:
+    - `TradeRecord`: price/volume/turnover/commission/slippage 改为 Decimal
+    - 所有撮合计算使用 Decimal 算术
+    - 指标统计转换为 float (用于报告)
+  - `tests/test_matching_engine.py`: 更新测试支持 Decimal
+
+#### TD-002: Streaming Generators for Large Datasets (HIGH Priority) ✅
+- **Problem**: 数据层 eager loading 导致大数据集 OOM 崩溃
+- **Solution**: 实现 Iterator/Generator 模式进行流式数据加载
+- **Changes**:
+  - `core/data/storage.py`:
+    - 添加 `iter_bar_data()` 流式读取 Bar 数据
+    - 添加 `iter_tick_data()` 流式读取 Tick 数据
+    - 支持可配置的 chunk_size (默认 10000 行)
+    - 使用 PyArrow iter_batches 实现高效流式读取
+
+#### TD-003: Version-Aware Snapshot Serialization (MEDIUM Priority) ✅
+- **Problem**: Snapshot schema 变更导致旧快照加载失败
+- **Solution**: 添加版本感知序列化和自动迁移
+- **Changes**:
+  - `core/engine/snapshot.py`:
+    - 添加 `MigrationFunc` 类型别名
+    - 添加 `_MIGRATIONS` 迁移函数注册表
+    - 实现 `_apply_migrations()` 自动版本迁移
+    - 实现 `register_migration()` 支持自定义迁移
+    - 添加 1.0.0 -> 1.1.0 示例迁移 (添加新字段默认值)
+    - `load_snapshot()` 自动应用迁移
+  - `tests/test_snapshot.py`: 更新测试支持版本迁移
+
+#### TD-004: Heartbeat/Watchdog for Event Bus (LOW Priority) ✅
+- **Problem**: 策略 handler 阻塞 >100ms 会导致整个 Event Bus 停滞
+- **Solution**: 添加心跳监控检测慢 handler
+- **Changes**:
+  - `core/engine/event_bus.py`:
+    - 添加 `HeartbeatMonitor` 类:
+      - 后台线程监控 handler 执行时间
+      - 可配置阈值 (默认 100ms)
+      - 慢 handler 回调机制
+      - 统计信息收集
+    - 添加 `HandlerExecutionInfo` 数据类
+    - `EventBus` 集成心跳监控:
+      - `enable_heartbeat` 构造参数
+      - `set_slow_handler_callback()` 设置告警回调
+      - `enable_heartbeat_monitor()` / `disable_heartbeat_monitor()`
+      - `get_heartbeat_statistics()` 获取监控统计
+
 ### Changed
 - 整合配置文件：将 setup.cfg 配置迁移至 pyproject.toml，删除冗余的 setup.cfg
 - 现代化类型注解：使用 `from __future__ import annotations` 支持 Python 3.10+ 语法
