@@ -156,6 +156,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - 导出: MatchingMode, L2SimulationLevel, SlippageModel, MatchingConfig, TradeRecord, MatchingQualityMetrics, IMatchingEngine, MatchingEngine
   - 改动文件: core/engine/__init__.py
 
+### Architecture Audit (Task 5 审计通过 - 2026-01-05)
+- ✅ **确定性合规**: 撮合引擎使用 tick.datetime 生成成交记录，无 datetime.now() 调用
+- ✅ **L2 架构设计**: 三层模拟等级设计合理，局限性文档完善
+- ⚠️ **性能优化 (v2.0)**: process_tick() 遍历所有订单为 O(N)，已添加 TODO 注释
+  - 建议: 使用 sortedcontainers.SortedDict 实现价格优先队列
+- 🟡 **浮点精度**: float 用于回测可接受，报告生成建议使用 Decimal
+- ✅ **测试覆盖**: Hypothesis 属性测试覆盖 L1/L2 所有路径
+- 📝 添加架构审计文档: docs/audit/2026-01-05-task5-matching-engine-audit.md
+- 改动文件: core/engine/matching.py (添加 TODO 注释)
+
 ### Fixed (架构审计修复 - 2026-01-05)
 - [Task 4 Audit] VeighNaAdapter 架构优化
   - 🔧 **软依赖管理**: 使用 try-except 延迟导入 vnpy，支持无 vnpy 环境运行

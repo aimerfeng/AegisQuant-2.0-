@@ -467,6 +467,14 @@ class MatchingEngine(IMatchingEngine):
             
         Returns:
             List of trade records for executed trades.
+        
+        Note:
+            TODO (v2.0 Optimization): Current implementation iterates through all
+            pending orders on every tick (O(N) complexity). For strategies with
+            thousands of limit orders (e.g., grid trading), consider implementing
+            a price-time priority queue or bucket system using sortedcontainers.SortedDict
+            to verify only relevant orders (e.g., Buy orders >= Tick Price).
+            See: docs/audit/2026-01-05-task5-matching-engine-audit.md
         """
         if self._config.mode == MatchingMode.L1:
             return self._process_tick_l1(tick)
