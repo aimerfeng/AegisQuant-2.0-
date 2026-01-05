@@ -1,0 +1,81 @@
+# Titan-Quant Risk Control Configuration
+# 风控配置文件
+
+risk:
+  # 最大单日回撤 (百分比)
+  max_daily_drawdown: 0.05  # 5%
+  # 最大单笔亏损 (百分比)
+  max_single_loss: 0.02  # 2%
+  # 最大持仓比例 (百分比)
+  max_position_ratio: 0.8  # 80%
+  # 启用自动平仓
+  enable_auto_liquidation: true
+  # 风控检查间隔 (秒)
+  check_interval: 1
+
+alerts:
+  # 风控触发告警
+  risk_trigger:
+    type: "sync"  # sync | async
+    channels:
+      - "system_notification"
+      - "email"
+    severity: "critical"  # info | warning | error | critical
+  
+  # 回测完成告警
+  backtest_complete:
+    type: "async"
+    channels:
+      - "email"
+    severity: "info"
+  
+  # 策略错误告警
+  strategy_error:
+    type: "sync"
+    channels:
+      - "system_notification"
+    severity: "error"
+  
+  # 数据异常告警
+  data_anomaly:
+    type: "async"
+    channels:
+      - "system_notification"
+    severity: "warning"
+
+notification:
+  # SMTP 邮件配置
+  email:
+    enabled: false
+    smtp_host: "smtp.example.com"
+    smtp_port: 587
+    use_tls: true
+    # 以下敏感信息应加密存储
+    # username: "your_email@example.com"
+    # password: "encrypted_password"
+    from_address: "titan-quant@example.com"
+    to_addresses:
+      - "admin@example.com"
+  
+  # Webhook 配置 (飞书/钉钉)
+  webhook:
+    enabled: false
+    # 飞书 Webhook URL
+    feishu_url: ""
+    # 钉钉 Webhook URL
+    dingtalk_url: ""
+    # Webhook 密钥 (应加密存储)
+    # secret: "encrypted_secret"
+
+thresholds:
+  # 预警阈值 (触发警告但不停止)
+  warning:
+    daily_drawdown: 0.03  # 3%
+    single_loss: 0.01  # 1%
+    position_ratio: 0.6  # 60%
+  
+  # 熔断阈值 (触发停止和平仓)
+  circuit_breaker:
+    daily_drawdown: 0.05  # 5%
+    single_loss: 0.02  # 2%
+    consecutive_losses: 5  # 连续亏损次数

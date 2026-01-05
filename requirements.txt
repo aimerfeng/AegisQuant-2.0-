@@ -1,0 +1,53 @@
+# Titan-Quant Dependencies
+
+# Core Framework
+vnpy>=3.0.0
+vnpy-ctp>=3.0.0
+
+# Data Processing
+polars>=0.20.0
+pandas>=2.0.0
+pyarrow>=14.0.0
+numpy>=1.24.0
+
+# Technical Analysis
+TA-Lib>=0.4.28
+
+# Parameter Optimization
+optuna>=3.5.0
+
+# Database
+sqlalchemy>=2.0.0
+
+# Encryption
+cryptography>=41.0.0
+argon2-cffi>=23.1.0
+
+# WebSocket Communication
+websockets>=12.0
+pyzmq>=25.0.0
+
+# Configuration
+pyyaml>=6.0.0
+python-dotenv>=1.0.0
+
+# Logging
+loguru>=0.7.0
+
+# Testing
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+pytest-cov>=4.1.0
+hypothesis>=6.92.0
+
+# Development
+black>=23.0.0
+isort>=5.12.0
+mypy>=1.7.0
+ruff>=0.1.0
+
+# Optional: MySQL Provider
+# pymysql>=1.1.0
+
+# Optional: MongoDB Provider
+# pymongo>=4.6.0

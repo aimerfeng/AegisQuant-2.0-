@@ -1,0 +1,80 @@
+# Titan-Quant System Configuration
+# 系统配置文件
+
+system:
+  # 引擎适配器: veighna | custom
+  engine_adapter: "veighna"
+  # 数据存储路径
+  data_path: "./database"
+  # 日志级别: DEBUG | INFO | WARNING | ERROR | CRITICAL
+  log_level: "INFO"
+  # 默认语言: en | zh_cn | zh_tw | ja
+  default_language: "zh_cn"
+
+communication:
+  # 通信协议: websocket | zmq
+  protocol: "websocket"
+  # 服务地址
+  host: "127.0.0.1"
+  # 服务端口
+  port: 8765
+  # 心跳间隔 (秒)
+  heartbeat_interval: 30
+  # 重连尝试次数
+  reconnect_attempts: 5
+  # 重连间隔 (秒)
+  reconnect_interval: 3
+
+backtest:
+  # 默认初始资金
+  default_capital: 1000000
+  # 默认手续费率
+  default_commission: 0.0003
+  # 默认滑点
+  default_slippage: 0.0001
+  # 默认撮合模式: L1 | L2
+  default_matching_mode: "L1"
+  # L2 模拟等级: LEVEL_1 | LEVEL_2 | LEVEL_3
+  default_l2_level: "LEVEL_1"
+
+optimization:
+  # 最大并行进程数
+  max_workers: 4
+  # 默认优化迭代次数
+  default_iterations: 100
+  # 优化算法: tpe | cmaes | random
+  default_algorithm: "tpe"
+
+snapshot:
+  # 快照存储路径
+  storage_path: "./snapshots"
+  # 自动保存间隔 (分钟), 0 表示禁用
+  auto_save_interval: 0
+  # 最大保留快照数
+  max_snapshots: 10
+
+logging:
+  # 日志文件路径
+  log_dir: "./logs"
+  # 系统日志文件
+  system_log: "system.log"
+  # 交易审计日志
+  trading_audit_log: "trading_audit.log"
+  # 用户操作日志
+  user_action_log: "user_action.log"
+  # 系统错误日志
+  error_log: "sys_error.log"
+  # 日志轮转大小 (MB)
+  max_log_size: 10
+  # 保留日志文件数
+  backup_count: 5
+
+database:
+  # SQLite 数据库路径
+  sqlite_path: "./database/titan_quant.db"
+  # Parquet 数据路径
+  parquet_path: "./database"
+
+encryption:
+  # 密钥文件路径
+  keyfile_path: "./keyfile.key"

@@ -1,0 +1,111 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "titan-quant"
+version = "0.1.0"
+description = "工程级量化交易回测系统"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+authors = [
+    {name = "Titan-Quant Team"}
+]
+keywords = ["quantitative", "trading", "backtest", "finance"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Financial and Insurance Industry",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Office/Business :: Financial :: Investment",
+]
+
+dependencies = [
+    "polars>=0.20.0",
+    "pandas>=2.0.0",
+    "pyarrow>=14.0.0",
+    "numpy>=1.24.0",
+    "optuna>=3.5.0",
+    "sqlalchemy>=2.0.0",
+    "cryptography>=41.0.0",
+    "argon2-cffi>=23.1.0",
+    "websockets>=12.0",
+    "pyzmq>=25.0.0",
+    "pyyaml>=6.0.0",
+    "loguru>=0.7.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.1.0",
+    "hypothesis>=6.92.0",
+    "black>=23.0.0",
+    "isort>=5.12.0",
+    "mypy>=1.7.0",
+    "ruff>=0.1.0",
+]
+mysql = ["pymysql>=1.1.0"]
+mongodb = ["pymongo>=4.6.0"]
+vnpy = ["vnpy>=3.0.0", "vnpy-ctp>=3.0.0"]
+talib = ["TA-Lib>=0.4.28"]
+
+[project.urls]
+Homepage = "https://github.com/aimerfeng/AegisQuant-2.0-.git"
+Repository = "https://github.com/aimerfeng/AegisQuant-2.0-.git"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["core*", "utils*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
+asyncio_mode = "auto"
+
+[tool.hypothesis]
+max_examples = 100
+deadline = 5000
+
+[tool.black]
+line-length = 88
+target-version = ["py310", "py311", "py312"]
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+    | \.venv
+    | venv
+    | __pycache__
+    | \.mypy_cache
+    | ui
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 88
+skip = [".git", ".venv", "venv", "__pycache__", "ui"]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
+exclude = ["ui", "venv", ".venv"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+exclude = [".git", ".venv", "venv", "__pycache__", "ui"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "B", "C4"]
+ignore = ["E501"]
