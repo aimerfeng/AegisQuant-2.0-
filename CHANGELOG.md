@@ -736,3 +736,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ✅ 所有 171 个测试通过
 - ✅ Property 18: Alert Type Classification (4 sub-tests)
 - 测试执行时间: 105.09s
+
+
+### Architecture Audit (Task 16 审计通过 - 2026-01-05)
+
+**审计结果:**
+- ✅ **Event Bus & Determinism**: PriorityQueue 确保因果顺序，线程安全实现正确
+- ✅ **Risk & Compliance**: SHA-256 链式审计日志达到 Tier-1 合规标准
+- ✅ **Alert System**: 同步/异步告警实现正确，多渠道通知完整
+- ⚠️ **Matching Engine**: L1 逻辑正确，但使用 float 存在精度风险
+- ⚠️ **Data Layer**: 大数据集可能导致 OOM，需要流式处理
+- ⚠️ **Snapshot**: 需要版本感知序列化以支持 schema 迁移
+
+**技术债务清单:**
+| ID | 优先级 | 组件 | 问题 | 修复方案 |
+|----|--------|------|------|----------|
+| TD-001 | HIGH | Matching Engine | Float 精度误差 | 迁移到 decimal.Decimal |
+| TD-002 | HIGH | Data Layer | 大数据集 OOM | 实现流式生成器 |
+| TD-003 | MEDIUM | Snapshot | Schema 迁移脆弱 | 添加版本感知序列化 |
+| TD-004 | LOW | Event Bus | 策略阻塞检测 | 添加心跳/看门狗监控 |
+
+**状态:** 后端核心功能完成 (Tasks 1-16)，已批准进入 UI 实现阶段 (Tasks 17+)
+
+📝 添加架构审计文档: docs/audit/2026-01-05-task16-alert-system-audit.md
