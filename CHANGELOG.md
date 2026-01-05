@@ -115,6 +115,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - 更新 core/engine/adapters/__init__.py 导出 VeighNaAdapter
   - 改动文件: core/engine/adapters/veighna_adapter.py, core/engine/adapters/__init__.py, core/engine/__init__.py
 
+## [Task 5] 撮合引擎模块 - 2026-01-05
+
+### Added
+- [Task 5.1] 实现撮合配置和数据类
+  - 创建 core/engine/matching.py
+  - 实现 MatchingMode 枚举 (L1, L2)
+  - 实现 L2SimulationLevel 枚举 (LEVEL_1, LEVEL_2, LEVEL_3)
+  - 实现 SlippageModel 枚举 (FIXED, VOLUME_BASED, VOLATILITY_BASED)
+  - 实现 MatchingConfig dataclass (撮合配置)
+  - 实现 TradeRecord dataclass (成交记录)
+  - 实现 MatchingQualityMetrics dataclass (撮合质量指标)
+  - 改动文件: core/engine/matching.py
+
+- [Task 5.2] 实现 L1 撮合逻辑
+  - 实现基于对价成交的 L1 撮合 (假设无限流动性)
+  - 实现手续费计算 (支持最低手续费)
+  - 实现滑点计算 (FIXED, VOLUME_BASED, VOLATILITY_BASED 三种模型)
+  - 买单以 ask_price 成交，卖单以 bid_price 成交
+  - 改动文件: core/engine/matching.py
+
+- [Task 5.3] 实现 L2 撮合逻辑
+  - 实现三个模拟等级的 L2 撮合:
+    - Level-1: 队列位置估算 (基于订单到达时间)
+    - Level-2: 完整订单簿重建 (基于 L2 数据)
+    - Level-3: 市场微观结构模拟 (包含隐藏订单估算)
+  - 实现队列位置估算算法
+  - 实现模拟局限性说明生成 (get_simulation_limitations)
+  - 改动文件: core/engine/matching.py
+
+- [Task 5.4] 编写撮合引擎属性测试
+  - Property 13: Trade Record Completeness (成交记录完整性)
+  - 测试 L1 模式下成交记录包含所有必需字段
+  - 测试 L2 模式下成交记录包含 L2 特定字段
+  - 测试各种配置组合下的成交记录完整性
+  - 创建 tests/test_matching_engine.py
+  - 改动文件: tests/test_matching_engine.py
+
+- 更新 core/engine/__init__.py 导出撮合引擎相关类型
+  - 导出: MatchingMode, L2SimulationLevel, SlippageModel, MatchingConfig, TradeRecord, MatchingQualityMetrics, IMatchingEngine, MatchingEngine
+  - 改动文件: core/engine/__init__.py
+
 ### Fixed (架构审计修复 - 2026-01-05)
 - [Task 4 Audit] VeighNaAdapter 架构优化
   - 🔧 **软依赖管理**: 使用 try-except 延迟导入 vnpy，支持无 vnpy 环境运行

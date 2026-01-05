@@ -16,6 +16,16 @@ from core.engine.adapter import (
 )
 from core.engine.event import Event, EventType
 from core.engine.event_bus import EventBus, EventHandler, IEventBus
+from core.engine.matching import (
+    IMatchingEngine,
+    L2SimulationLevel,
+    MatchingConfig,
+    MatchingEngine,
+    MatchingMode,
+    MatchingQualityMetrics,
+    SlippageModel,
+    TradeRecord,
+)
 from core.engine.types import (
     BarData,
     Direction,
@@ -47,4 +57,13 @@ __all__ = [
     "EngineConfig",
     "BacktestMode",
     "BacktestResult",
+    # Matching engine
+    "MatchingMode",
+    "L2SimulationLevel",
+    "SlippageModel",
+    "MatchingConfig",
+    "TradeRecord",
+    "MatchingQualityMetrics",
+    "IMatchingEngine",
+    "MatchingEngine",
 ]
