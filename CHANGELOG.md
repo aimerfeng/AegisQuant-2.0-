@@ -166,6 +166,76 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 📝 添加架构审计文档: docs/audit/2026-01-05-task5-matching-engine-audit.md
 - 改动文件: core/engine/matching.py (添加 TODO 注释)
 
+## [Task 6] 数据治理中心模块 - 2026-01-05
+
+### Added
+- [Task 6.1] 实现数据导入功能
+  - 创建 core/data/importer.py
+  - 实现 DataFormat 枚举 (CSV, EXCEL, PARQUET)
+  - 实现 DataImporter 类
+  - 实现 CSV, Excel, Parquet 格式自动识别 (基于扩展名和文件头)
+  - 使用 Pandas 进行数据加载 (Polars 在 Windows 环境安装失败)
+  - 改动文件: core/data/importer.py
+
+- [Task 6.2] 实现数据清洗功能
+  - 创建 core/data/cleaner.py
+  - 实现 FillMethod 枚举 (FORWARD_FILL, LINEAR, DROP)
+  - 实现 CleaningConfig dataclass (清洗配置)
+  - 实现 DataQualityReport dataclass (数据质量报告)
+  - 实现 DataCleaner 类:
+    - 缺失值检测和填充 (Forward Fill, Linear Interpolation)
+    - 异常值检测 (3σ 规则，支持自定义阈值)
+    - 时间戳对齐验证 (多合约数据对齐检查)
+    - Z-score 计算方法
+  - 改动文件: core/data/cleaner.py
+
+- [Task 6.3] 实现 Parquet 存储
+  - 创建 core/data/storage.py
+  - 实现 DataType 枚举 (TICK, BAR)
+  - 实现 BarInterval 枚举 (1m, 5m, 15m, 30m, 1h, 4h, 1d, 1w)
+  - 实现 StorageConfig dataclass (存储配置)
+  - 实现 ParquetStorage 类:
+    - 按交易所/合约/周期分类存储
+    - Tick 数据: database/ticks/{exchange}/{symbol}/{date}.parquet
+    - Bar 数据: database/bars/{exchange}/{symbol}/{interval}.parquet
+    - 实现 Tick 和 Bar 数据的 schema 验证
+    - 支持 snappy 压缩
+    - 实现数据列表和删除功能
+  - 改动文件: core/data/storage.py
+
+- [Task 6.4] 编写数据治理属性测试
+  - 创建 tests/test_data_governance.py
+  - 实现自定义 Hypothesis 策略:
+    - valid_numeric_dataframe: 生成有效数值 DataFrame
+    - dataframe_with_missing_values: 生成带缺失值的 DataFrame
+    - dataframe_with_outliers: 生成带异常值的 DataFrame
+    - bar_dataframe: 生成 Bar 数据 DataFrame
+    - tick_dataframe: 生成 Tick 数据 DataFrame
+  - Property 3: Data Format Detection ✓ PASSED
+    - 测试 CSV 格式检测和解析
+    - 测试 Parquet 格式检测和解析
+  - Property 4: Missing Value Fill Correctness ✓ PASSED
+    - 测试 Forward Fill 移除所有空值
+    - 测试 Linear Interpolation 移除所有空值
+    - 测试 Forward Fill 使用前一个值
+  - Property 5: Outlier Detection Accuracy ✓ PASSED
+    - 测试检测到的异常值 |z-score| > threshold
+    - 测试非异常值 |z-score| <= threshold
+    - 测试自定义阈值生效
+  - Property 6: Timestamp Alignment Validation ✓ PASSED
+    - 测试检测缺失时间戳
+    - 测试对齐数据无问题
+  - Property 7: Data Persistence Round-Trip ✓ PASSED
+    - 测试 Bar 数据保存/加载往返
+    - 测试 Tick 数据保存/加载往返
+    - 测试存储路径组织正确
+  - 单元测试: DataImporter, DataCleaner, ParquetStorage 基础功能
+  - 改动文件: tests/test_data_governance.py
+
+- 更新 core/data/__init__.py 导出数据治理相关类型
+  - 导出: DataFormat, DataImporter, FillMethod, CleaningConfig, DataQualityReport, DataCleaner, DataType, BarInterval, StorageConfig, ParquetStorage
+  - 改动文件: core/data/__init__.py
+
 ### Fixed (架构审计修复 - 2026-01-05)
 - [Task 4 Audit] VeighNaAdapter 架构优化
   - 🔧 **软依赖管理**: 使用 try-except 延迟导入 vnpy，支持无 vnpy 环境运行
