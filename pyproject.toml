@@ -62,17 +62,29 @@ Repository = "https://github.com/aimerfeng/AegisQuant-2.0-.git"
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["core*", "utils*"]
+exclude = ["tests*", "ui*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_functions = ["test_*"]
 addopts = "-v --tb=short"
-asyncio_mode = "auto"
 
 [tool.hypothesis]
 max_examples = 100
 deadline = 5000
+
+[tool.coverage.run]
+source = ["core", "utils"]
+omit = ["tests/*", "ui/*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+]
 
 [tool.black]
 line-length = 88

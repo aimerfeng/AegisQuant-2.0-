@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- 整合配置文件：将 setup.cfg 配置迁移至 pyproject.toml，删除冗余的 setup.cfg
+- 现代化类型注解：使用 `from __future__ import annotations` 支持 Python 3.10+ 语法
+- 增强 .gitignore：添加更多量化开发相关的忽略规则
+
 ### Added
 - [Task 1.1] 项目初始化与基础架构
   - 创建项目目录结构 (bin/, config/, core/, database/, logs/, strategies/, ui/, reports/, utils/)

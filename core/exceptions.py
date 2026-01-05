@@ -13,7 +13,9 @@ Exception Hierarchy:
     ├── AuditIntegrityError - Audit log integrity violations
     └── RiskControlError - Risk control trigger errors
 """
-from typing import Any, Optional
+from __future__ import annotations
+
+from typing import Any
 
 
 class TitanQuantError(Exception):
@@ -32,8 +34,8 @@ class TitanQuantError(Exception):
     def __init__(
         self,
         message: str,
-        error_code: Optional[str] = None,
-        details: Optional[dict[str, Any]] = None
+        error_code: str | None = None,
+        details: dict[str, Any] | None = None
     ) -> None:
         self.message = message
         self.error_code = error_code
@@ -82,9 +84,9 @@ class EngineError(TitanQuantError):
     def __init__(
         self,
         message: str,
-        error_code: Optional[str] = None,
-        details: Optional[dict[str, Any]] = None,
-        engine_name: Optional[str] = None
+        error_code: str | None = None,
+        details: dict[str, Any] | None = None,
+        engine_name: str | None = None
     ) -> None:
         details = details or {}
         if engine_name:
@@ -113,10 +115,10 @@ class DataError(TitanQuantError):
     def __init__(
         self,
         message: str,
-        error_code: Optional[str] = None,
-        details: Optional[dict[str, Any]] = None,
-        data_source: Optional[str] = None,
-        file_path: Optional[str] = None
+        error_code: str | None = None,
+        details: dict[str, Any] | None = None,
+        data_source: str | None = None,
+        file_path: str | None = None
     ) -> None:
         details = details or {}
         if data_source:
@@ -148,10 +150,10 @@ class StrategyError(TitanQuantError):
     def __init__(
         self,
         message: str,
-        error_code: Optional[str] = None,
-        details: Optional[dict[str, Any]] = None,
-        strategy_id: Optional[str] = None,
-        strategy_name: Optional[str] = None
+        error_code: str | None = None,
+        details: dict[str, Any] | None = None,
+        strategy_id: str | None = None,
+        strategy_name: str | None = None
     ) -> None:
         details = details or {}
         if strategy_id:
@@ -183,10 +185,10 @@ class SnapshotError(TitanQuantError):
     def __init__(
         self,
         message: str,
-        error_code: Optional[str] = None,
-        details: Optional[dict[str, Any]] = None,
-        snapshot_id: Optional[str] = None,
-        snapshot_version: Optional[str] = None
+        error_code: str | None = None,
+        details: dict[str, Any] | None = None,
+        snapshot_id: str | None = None,
+        snapshot_version: str | None = None
     ) -> None:
         details = details or {}
         if snapshot_id:
@@ -221,12 +223,12 @@ class AuditIntegrityError(TitanQuantError):
     def __init__(
         self,
         message: str,
-        error_code: Optional[str] = None,
-        details: Optional[dict[str, Any]] = None,
-        log_file: Optional[str] = None,
-        record_id: Optional[str] = None,
-        expected_hash: Optional[str] = None,
-        actual_hash: Optional[str] = None
+        error_code: str | None = None,
+        details: dict[str, Any] | None = None,
+        log_file: str | None = None,
+        record_id: str | None = None,
+        expected_hash: str | None = None,
+        actual_hash: str | None = None
     ) -> None:
         details = details or {}
         if log_file:
@@ -268,11 +270,11 @@ class RiskControlError(TitanQuantError):
     def __init__(
         self,
         message: str,
-        error_code: Optional[str] = None,
-        details: Optional[dict[str, Any]] = None,
-        trigger_type: Optional[str] = None,
-        threshold: Optional[float] = None,
-        actual_value: Optional[float] = None,
+        error_code: str | None = None,
+        details: dict[str, Any] | None = None,
+        trigger_type: str | None = None,
+        threshold: float | None = None,
+        actual_value: float | None = None,
         auto_liquidate: bool = False
     ) -> None:
         details = details or {}
@@ -290,7 +292,6 @@ class RiskControlError(TitanQuantError):
         self.auto_liquidate = auto_liquidate
 
 
-# Error code constants for common errors
 class ErrorCodes:
     """Standard error codes for Titan-Quant exceptions."""
     

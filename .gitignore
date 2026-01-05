@@ -19,12 +19,14 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+MANIFEST
 
 # Virtual Environment
 venv/
 .venv/
 ENV/
 env/
+.conda/
 
 # IDE
 .idea/
@@ -32,26 +34,36 @@ env/
 *.swp
 *.swo
 *~
+*.sublime-project
+*.sublime-workspace
 
 # Testing
 .pytest_cache/
 .coverage
+.coverage.*
 htmlcov/
 .tox/
 .nox/
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
 
 # Type checking
 .mypy_cache/
 .dmypy.json
 dmypy.json
+.pytype/
 
 # Logs
 logs/*.log
 *.log
+logs/**/*.log
 
 # Database
 database/*.db
 database/*.sqlite
+database/*.sqlite3
 database/ticks/**/*.parquet
 database/bars/**/*.parquet
 database/cache/**/*
@@ -60,26 +72,39 @@ database/cache/**/*
 # Reports
 reports/**/*.html
 reports/**/*.csv
+reports/**/*.json
 !reports/.gitkeep
 
 # Encryption keys (NEVER commit!)
 keyfile.key
 *.key
+*.pem
+*.crt
 
 # Environment variables
 .env
 .env.local
 .env.*.local
+.envrc
 
 # OS
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
+desktop.ini
 
 # Node.js (UI)
 ui/node_modules/
 ui/dist/
 ui/build/
 ui/.cache/
+ui/.parcel-cache/
+ui/package-lock.json
+ui/yarn.lock
 
 # Snapshots
 snapshots/
@@ -89,3 +114,74 @@ snapshots/
 tmp/
 temp/
 *.tmp
+*.temp
+*.bak
+*.swp
+*~
+
+# Quantitative specific
+*.pickle
+*.pkl
+*.h5
+*.hdf5
+backtest_results/
+optimization_results/
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+*.ipynb
+
+# Profiling
+*.prof
+*.lprof
+
+# C extensions
+*.c
+*.cpp
+!core/**/*.c
+!core/**/*.cpp
+
+# Distribution / packaging
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Installer logs
+pip-log.txt
+
+# Unit test / coverage reports
+nosetests.xml
+coverage/
+
+# Translations
+*.mo
+*.pot
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+target/
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# Pyre type checker
+.pyre/
+
+# pyright
+pyrightconfig.json
