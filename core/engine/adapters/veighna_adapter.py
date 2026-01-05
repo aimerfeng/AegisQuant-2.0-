@@ -15,13 +15,21 @@ Note:
     This adapter provides a bridge between Titan-Quant and VeighNa.
     When VeighNa is not installed, the adapter will operate in stub mode
     for testing and development purposes.
+
+Architecture Audit Notes (2026-01-05):
+    - Soft dependency: VeighNa imports are wrapped in try-except to prevent
+      ImportError in environments without vnpy installed (CI/CD, lightweight containers)
+    - Exception boundary: All VeighNa exceptions are caught and wrapped into
+      Titan-Quant's EngineError to maintain clean exception boundaries
+    - Thread safety: Callbacks use try-except to prevent cross-thread exceptions
+      from propagating and crashing the event loop
 """
 from __future__ import annotations
 
 import logging
 import uuid
-from datetime import datetime
-from typing import Any, Callable, Optional, Union
+from datetime import datetime, timedelta
+from typing import Any, Callable, Optional, Union, TYPE_CHECKING
 
 from core.engine.adapter import (
     BacktestMode,
@@ -31,13 +39,37 @@ from core.engine.adapter import (
     IEngineAdapter,
 )
 from core.engine.types import BarData, OrderData, TickData
-from core.exceptions import EngineError, ErrorCodes
+from core.exceptions import EngineError, ErrorCodes, StrategyError
 
 logger = logging.getLogger(__name__)
 
 
-# Try to import VeighNa components
-# If not available, we'll use stub implementations
+# =============================================================================
+# Soft Dependency Management for VeighNa (vnpy)
+# =============================================================================
+# VeighNa is an optional dependency. The adapter operates in two modes:
+# 1. Full mode: When vnpy is installed, uses actual VeighNa engine
+# 2. Stub mode: When vnpy is not installed, provides mock functionality
+#
+# This allows:
+# - CI/CD pipelines to run without vnpy
+# - Unit tests to work without external dependencies
+# - Lightweight deployments for backtesting-only scenarios
+# =============================================================================
+
+VEIGHNA_AVAILABLE = False
+
+# Type placeholders for static type checking when vnpy is not installed
+if TYPE_CHECKING:
+    from vnpy.trader.constant import Direction as VnDirection
+    from vnpy.trader.constant import Exchange as VnExchange
+    from vnpy.trader.constant import Offset as VnOffset
+    from vnpy.trader.constant import Status as VnStatus
+    from vnpy.trader.object import BarData as VnBarData
+    from vnpy.trader.object import OrderData as VnOrderData
+    from vnpy.trader.object import TickData as VnTickData
+    from vnpy_ctastrategy.backtesting import BacktestingEngine
+
 try:
     from vnpy.trader.constant import Direction as VnDirection
     from vnpy.trader.constant import Exchange as VnExchange
@@ -49,8 +81,19 @@ try:
     from vnpy_ctastrategy.backtesting import BacktestingEngine
     
     VEIGHNA_AVAILABLE = True
+    logger.info("VeighNa (vnpy) loaded successfully")
 except ImportError:
-    VEIGHNA_AVAILABLE = False
+    # Define placeholder types for when vnpy is not installed
+    # This prevents NameError when referencing these types in method signatures
+    VnDirection = None  # type: ignore
+    VnExchange = None  # type: ignore
+    VnOffset = None  # type: ignore
+    VnStatus = None  # type: ignore
+    VnBarData = None  # type: ignore
+    VnOrderData = None  # type: ignore
+    VnTickData = None  # type: ignore
+    BacktestingEngine = None  # type: ignore
+    
     logger.warning(
         "VeighNa (vnpy) is not installed. VeighNaAdapter will operate in stub mode. "
         "Install vnpy to enable full functionality: pip install vnpy vnpy_ctastrategy"
@@ -175,24 +218,51 @@ class VeighNaAdapter(IEngineAdapter):
         
         Returns:
             Strategy ID string.
+        
+        Raises:
+            StrategyError: If strategy loading fails.
         """
         strategy_id = f"strategy_{uuid.uuid4().hex[:8]}"
         
-        self._strategies[strategy_id] = {
-            "class": strategy_class,
-            "params": params,
-            "instance": None,
-        }
-        
-        if self._is_veighna_available and self._engine:
-            # Add strategy to VeighNa engine
-            self._engine.add_strategy(
-                strategy_class,
-                params,
-            )
-        
-        logger.info(f"Strategy loaded: {strategy_id} ({strategy_class.__name__})")
-        return strategy_id
+        try:
+            self._strategies[strategy_id] = {
+                "class": strategy_class,
+                "params": params,
+                "instance": None,
+            }
+            
+            if self._is_veighna_available and self._engine:
+                # Add strategy to VeighNa engine
+                # Wrap VeighNa-specific exceptions
+                try:
+                    self._engine.add_strategy(
+                        strategy_class,
+                        params,
+                    )
+                except Exception as vn_error:
+                    # Clean up on failure
+                    del self._strategies[strategy_id]
+                    raise StrategyError(
+                        message=f"VeighNa failed to load strategy: {vn_error}",
+                        error_code=ErrorCodes.STRATEGY_LOAD_FAILED,
+                        strategy_id=strategy_id,
+                        strategy_name=strategy_class.__name__,
+                    ) from vn_error
+            
+            logger.info(f"Strategy loaded: {strategy_id} ({strategy_class.__name__})")
+            return strategy_id
+            
+        except StrategyError:
+            # Re-raise our own exceptions
+            raise
+        except Exception as e:
+            # Wrap unexpected exceptions
+            raise StrategyError(
+                message=f"Failed to load strategy: {e}",
+                error_code=ErrorCodes.STRATEGY_LOAD_FAILED,
+                strategy_id=strategy_id,
+                strategy_name=strategy_class.__name__,
+            ) from e
     
     def unload_strategy(self, strategy_id: str) -> bool:
         """
@@ -226,24 +296,47 @@ class VeighNaAdapter(IEngineAdapter):
         
         Returns:
             True if started successfully.
+        
+        Raises:
+            EngineError: If backtest cannot be started.
         """
         if self._state == EngineState.RUNNING:
             logger.warning("Backtest is already running")
             return False
         
-        self._current_datetime = start_date
-        self._state = EngineState.RUNNING
-        
-        if self._is_veighna_available and self._engine:
-            # Configure and run VeighNa backtest
-            self._engine.set_parameters(
-                start=start_date,
-                end=end_date,
-            )
-            # Note: Actual execution would be handled by VeighNa's run_backtesting()
-        
-        logger.info(f"Backtest started: {start_date} to {end_date}")
-        return True
+        try:
+            self._current_datetime = start_date
+            self._state = EngineState.RUNNING
+            
+            if self._is_veighna_available and self._engine:
+                # Configure and run VeighNa backtest
+                # Wrap VeighNa-specific exceptions
+                try:
+                    self._engine.set_parameters(
+                        start=start_date,
+                        end=end_date,
+                    )
+                    # Note: Actual execution would be handled by VeighNa's run_backtesting()
+                except Exception as vn_error:
+                    self._state = EngineState.ERROR
+                    raise EngineError(
+                        message=f"VeighNa backtest configuration failed: {vn_error}",
+                        error_code=ErrorCodes.ENGINE_INIT_FAILED,
+                        engine_name=self.ENGINE_NAME,
+                    ) from vn_error
+            
+            logger.info(f"Backtest started: {start_date} to {end_date}")
+            return True
+            
+        except EngineError:
+            raise
+        except Exception as e:
+            self._state = EngineState.ERROR
+            raise EngineError(
+                message=f"Failed to start backtest: {e}",
+                error_code=ErrorCodes.ENGINE_INIT_FAILED,
+                engine_name=self.ENGINE_NAME,
+            ) from e
     
     def pause(self) -> bool:
         """Pause the running backtest."""
@@ -276,7 +369,6 @@ class VeighNaAdapter(IEngineAdapter):
         # In stub mode, just advance the datetime
         if self._current_datetime:
             # Advance by one minute (default step)
-            from datetime import timedelta
             self._current_datetime += timedelta(minutes=1)
         
         logger.debug(f"Step executed: {self._current_datetime}")
@@ -333,14 +425,44 @@ class VeighNaAdapter(IEngineAdapter):
         
         Returns:
             Order ID string.
+        
+        Raises:
+            EngineError: If order submission fails.
         """
-        self._orders[order.order_id] = order
-        
-        # Trigger order callbacks
-        self._trigger_callbacks("order", order)
-        
-        logger.info(f"Order submitted: {order.order_id}")
-        return order.order_id
+        try:
+            self._orders[order.order_id] = order
+            
+            # If VeighNa is available, submit to underlying engine
+            if self._is_veighna_available and self._engine:
+                try:
+                    # VeighNa order submission would go here
+                    # self._engine.send_order(...)
+                    pass
+                except Exception as vn_error:
+                    # Remove from local orders on failure
+                    del self._orders[order.order_id]
+                    raise EngineError(
+                        message=f"VeighNa order submission failed: {vn_error}",
+                        error_code=ErrorCodes.MATCHING_ENGINE_ERROR,
+                        engine_name=self.ENGINE_NAME,
+                        details={"order_id": order.order_id},
+                    ) from vn_error
+            
+            # Trigger order callbacks
+            self._trigger_callbacks("order", order)
+            
+            logger.info(f"Order submitted: {order.order_id}")
+            return order.order_id
+            
+        except EngineError:
+            raise
+        except Exception as e:
+            raise EngineError(
+                message=f"Failed to submit order: {e}",
+                error_code=ErrorCodes.MATCHING_ENGINE_ERROR,
+                engine_name=self.ENGINE_NAME,
+                details={"order_id": order.order_id},
+            ) from e
     
     def cancel_order(self, order_id: str) -> bool:
         """
@@ -351,35 +473,69 @@ class VeighNaAdapter(IEngineAdapter):
         
         Returns:
             True if successful.
+        
+        Raises:
+            EngineError: If order cancellation fails due to engine error.
         """
         if order_id not in self._orders:
+            logger.warning(f"Order not found for cancellation: {order_id}")
             return False
         
         order = self._orders[order_id]
         if not order.is_active:
+            logger.warning(f"Order is not active, cannot cancel: {order_id}")
             return False
         
-        # Create updated order with cancelled status
-        cancelled_order = OrderData(
-            order_id=order.order_id,
-            symbol=order.symbol,
-            exchange=order.exchange,
-            direction=order.direction,
-            offset=order.offset,
-            price=order.price,
-            volume=order.volume,
-            traded=order.traded,
-            status="CANCELLED",
-            is_manual=order.is_manual,
-            create_time=order.create_time,
-            update_time=datetime.now(),
-            strategy_id=order.strategy_id,
-            reference=order.reference,
-        )
-        self._orders[order_id] = cancelled_order
-        
-        logger.info(f"Order cancelled: {order_id}")
-        return True
+        try:
+            # If VeighNa is available, cancel in underlying engine
+            if self._is_veighna_available and self._engine:
+                try:
+                    # VeighNa order cancellation would go here
+                    # self._engine.cancel_order(...)
+                    pass
+                except Exception as vn_error:
+                    raise EngineError(
+                        message=f"VeighNa order cancellation failed: {vn_error}",
+                        error_code=ErrorCodes.MATCHING_ENGINE_ERROR,
+                        engine_name=self.ENGINE_NAME,
+                        details={"order_id": order_id},
+                    ) from vn_error
+            
+            # Create updated order with cancelled status
+            cancelled_order = OrderData(
+                order_id=order.order_id,
+                symbol=order.symbol,
+                exchange=order.exchange,
+                direction=order.direction,
+                offset=order.offset,
+                price=order.price,
+                volume=order.volume,
+                traded=order.traded,
+                status="CANCELLED",
+                is_manual=order.is_manual,
+                create_time=order.create_time,
+                update_time=datetime.now(),
+                strategy_id=order.strategy_id,
+                reference=order.reference,
+            )
+            self._orders[order_id] = cancelled_order
+            
+            # Trigger order update callbacks
+            self._trigger_callbacks("order", cancelled_order)
+            
+            logger.info(f"Order cancelled: {order_id}")
+            return True
+            
+        except EngineError:
+            raise
+        except Exception as e:
+            logger.error(f"Unexpected error cancelling order {order_id}: {e}")
+            raise EngineError(
+                message=f"Failed to cancel order: {e}",
+                error_code=ErrorCodes.MATCHING_ENGINE_ERROR,
+                engine_name=self.ENGINE_NAME,
+                details={"order_id": order_id},
+            ) from e
     
     def get_order(self, order_id: str) -> Optional[OrderData]:
         """Get order by ID."""

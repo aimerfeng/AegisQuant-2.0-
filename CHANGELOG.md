@@ -114,3 +114,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - 更新 core/engine/__init__.py 导出新类型
   - 更新 core/engine/adapters/__init__.py 导出 VeighNaAdapter
   - 改动文件: core/engine/adapters/veighna_adapter.py, core/engine/adapters/__init__.py, core/engine/__init__.py
+
+### Fixed (架构审计修复 - 2026-01-05)
+- [Task 4 Audit] VeighNaAdapter 架构优化
+  - 🔧 **软依赖管理**: 使用 try-except 延迟导入 vnpy，支持无 vnpy 环境运行
+    - 添加 TYPE_CHECKING 块支持静态类型检查
+    - 定义占位符类型防止 NameError
+  - 🔧 **异常边界封装**: 所有 VeighNa 异常被捕获并包装为 Titan-Quant 统一异常
+    - `initialize()` -> `EngineError`
+    - `load_strategy()` -> `StrategyError`
+    - `start_backtest()` -> `EngineError`
+    - `submit_order()` -> `EngineError`
+    - `cancel_order()` -> `EngineError`
+  - 📝 添加架构审计文档: docs/audit/2026-01-05-task4-adapter-audit.md
+  - 改动文件: core/engine/adapters/veighna_adapter.py
