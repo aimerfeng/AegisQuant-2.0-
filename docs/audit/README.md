@@ -6,16 +6,19 @@
 
 ```
 docs/audit/
-├── README.md                           # 本文件
-├── 2024-05-20-eventbus-audit.md       # EventBus 架构审计报告
-└── 2024-05-20-eventbus-fix-report.md  # EventBus 修复报告
+├── README.md                                    # 本文件
+├── 2024-05-20-eventbus-audit.md                # EventBus 架构审计报告
+├── 2024-05-20-eventbus-fix-report.md           # EventBus 修复报告
+├── 2026-01-05-task4-adapter-audit.md           # Task 4 引擎适配器审计报告
+└── 2026-01-05-task4-optimization-report.md     # Task 4 优化修复报告
 ```
 
 ## 审计记录
 
-| 日期 | 审计范围 | 状态 | 审计报告 | 修复报告 |
-|-----|---------|------|---------|---------|
-| 2024-05-20 | Tasks 1 & 2 (EventBus) | ✅ 已修复 | [审计报告](./2024-05-20-eventbus-audit.md) | [修复报告](./2024-05-20-eventbus-fix-report.md) |
+| 日期 | 审计范围 | 状态 | 评分 | 审计报告 | 修复报告 |
+|-----|---------|------|------|---------|---------|
+| 2024-05-20 | Tasks 1 & 2 (EventBus) | ✅ 已修复 | - | [审计报告](./2024-05-20-eventbus-audit.md) | [修复报告](./2024-05-20-eventbus-fix-report.md) |
+| 2026-01-05 | Task 4 (引擎适配器) | ✅ 已修复 | A- | [审计报告](./2026-01-05-task4-adapter-audit.md) | [优化报告](./2026-01-05-task4-optimization-report.md) |
 
 ## 审计流程
 
