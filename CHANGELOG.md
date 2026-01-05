@@ -42,6 +42,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - 实现 ErrorCodes 错误码常量类
   - 改动文件: core/exceptions.py, tests/test_exceptions.py
 
+- [Task 2] 事件总线核心模块
+  - [Task 2.1] 实现 Event 和 EventType 数据类
+    - 创建 core/engine/event.py
+    - 实现 Event dataclass (sequence_number, event_type, timestamp, data, source)
+    - 实现 EventType 枚举 (TICK, BAR, ORDER, TRADE, POSITION, ACCOUNT, STRATEGY, RISK, SYSTEM)
+    - 支持 to_dict() 和 from_dict() 序列化方法
+  - [Task 2.2] 实现 EventBus 类
+    - 创建 core/engine/event_bus.py
+    - 实现 IEventBus 抽象接口
+    - 实现 EventBus 类 (线程安全)
+    - 实现 publish(), subscribe(), unsubscribe() 方法
+    - 实现单调递增序号生成
+    - 实现事件队列和回放功能 (replay_from, get_pending_events)
+    - 实现事件历史管理 (get_event_history, clear_history)
+  - [Task 2.3] 编写 EventBus 属性测试
+    - Property 1: Event Sequence Monotonicity (事件序号单调递增)
+    - 测试单线程和多线程并发场景
+    - 测试历史清除后序号继续递增
+  - 改动文件: core/engine/event.py, core/engine/event_bus.py, core/engine/__init__.py, tests/test_event_bus.py
+
 ### Changed
 - N/A
 

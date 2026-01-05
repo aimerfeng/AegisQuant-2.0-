@@ -29,21 +29,21 @@
     - 实现 TitanQuantError 及其子类 (EngineError, DataError, StrategyError, SnapshotError, AuditIntegrityError, RiskControlError)
     - _Requirements: 1.8_
 
-- [ ] 2. 事件总线核心模块
-  - [ ] 2.1 实现 Event 和 EventType 数据类
+- [x] 2. 事件总线核心模块
+  - [x] 2.1 实现 Event 和 EventType 数据类
     - 创建 core/engine/event.py
     - 实现 Event dataclass 包含 sequence_number, event_type, timestamp, data, source
     - 实现 EventType 枚举
     - _Requirements: 1.5, 1.6_
 
-  - [ ] 2.2 实现 EventBus 类
+  - [x] 2.2 实现 EventBus 类
     - 实现 IEventBus 接口
     - 实现 publish(), subscribe(), unsubscribe() 方法
     - 实现单调递增序号生成
     - 实现事件队列和回放功能
     - _Requirements: 1.6, 1.7_
 
-  - [ ] 2.3 编写 EventBus 属性测试
+  - [x] 2.3 编写 EventBus 属性测试
     - **Property 1: Event Sequence Monotonicity**
     - **Validates: Requirements 1.7**
 
