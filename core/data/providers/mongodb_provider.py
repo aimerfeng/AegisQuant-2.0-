@@ -5,6 +5,12 @@ This module implements a data provider for MongoDB databases.
 It provides access to historical market data stored in MongoDB collections.
 
 Requirements: Data source extension - MongoDB data source connection and query
+
+Performance Notes (Audit 2026-01-05):
+- Uses cursor iteration for memory-efficient document processing
+- Direct dict access avoids Series boxing overhead
+- TODO (v2.0): Implement cursor batching for streaming large datasets
+- TODO (v2.0): Add connection pool for concurrent access
 """
 from __future__ import annotations
 

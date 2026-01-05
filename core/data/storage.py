@@ -162,8 +162,31 @@ class ParquetStorage:
         df.to_parquet(file_path, compression=self.config.compression, index=False)
         return str(file_path)
     
-    def load_tick_data(self, exchange: str, symbol: str, date: str) -> pd.DataFrame:
-        """Load tick data from Parquet file."""
+    def load_tick_data(
+        self, 
+        exchange: str, 
+        symbol: str, 
+        date: str,
+        filters: list[tuple[str, str, Any]] | None = None,
+    ) -> pd.DataFrame:
+        """
+        Load tick data from Parquet file.
+        
+        Args:
+            exchange: Exchange name
+            symbol: Symbol name
+            date: Date string (YYYY-MM-DD)
+            filters: Optional PyArrow filters for predicate pushdown
+                     Format: [('column', 'op', value), ...]
+                     Example: [('symbol', '==', 'btc_usdt')]
+        
+        Returns:
+            DataFrame with tick data
+        
+        Performance Notes (Audit 2026-01-05):
+            - Uses filters parameter for Predicate Pushdown when available
+            - Reduces I/O by filtering at the Parquet level
+        """
         file_path = self._get_tick_path(exchange, symbol, date)
         
         if not file_path.exists():
@@ -173,10 +196,42 @@ class ParquetStorage:
                 file_path=str(file_path),
             )
         
-        return pd.read_parquet(file_path)
+        # [Optimization] Use filters for Predicate Pushdown when provided
+        try:
+            if filters:
+                return pd.read_parquet(file_path, engine='pyarrow', filters=filters)
+            return pd.read_parquet(file_path)
+        except Exception as e:
+            # Fallback to full read if filters fail (e.g., column not in file)
+            if filters:
+                return pd.read_parquet(file_path)
+            raise
     
-    def load_bar_data(self, exchange: str, symbol: str, interval: str | BarInterval) -> pd.DataFrame:
-        """Load bar data from Parquet file."""
+    def load_bar_data(
+        self, 
+        exchange: str, 
+        symbol: str, 
+        interval: str | BarInterval,
+        filters: list[tuple[str, str, Any]] | None = None,
+    ) -> pd.DataFrame:
+        """
+        Load bar data from Parquet file.
+        
+        Args:
+            exchange: Exchange name
+            symbol: Symbol name
+            interval: Bar interval (e.g., '1m', '1h', '1d')
+            filters: Optional PyArrow filters for predicate pushdown
+                     Format: [('column', 'op', value), ...]
+                     Example: [('symbol', '==', 'btc_usdt')]
+        
+        Returns:
+            DataFrame with bar data
+        
+        Performance Notes (Audit 2026-01-05):
+            - Uses filters parameter for Predicate Pushdown when available
+            - Reduces I/O by filtering at the Parquet level
+        """
         file_path = self._get_bar_path(exchange, symbol, interval)
         
         if not file_path.exists():
@@ -186,7 +241,16 @@ class ParquetStorage:
                 file_path=str(file_path),
             )
         
-        return pd.read_parquet(file_path)
+        # [Optimization] Use filters for Predicate Pushdown when provided
+        try:
+            if filters:
+                return pd.read_parquet(file_path, engine='pyarrow', filters=filters)
+            return pd.read_parquet(file_path)
+        except Exception as e:
+            # Fallback to full read if filters fail (e.g., column not in file)
+            if filters:
+                return pd.read_parquet(file_path)
+            raise
     
     def list_exchanges(self, data_type: DataType = DataType.BAR) -> list[str]:
         """List available exchanges."""

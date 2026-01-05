@@ -26,6 +26,36 @@ from core.engine.matching import (
     SlippageModel,
     TradeRecord,
 )
+from core.engine.snapshot import (
+    AccountState,
+    ISnapshotManager,
+    PositionState,
+    Snapshot,
+    SnapshotManager,
+    StrategyState,
+)
+from core.engine.replay import (
+    DataProvider,
+    IReplayController,
+    ReplayConfig,
+    ReplayController,
+    ReplaySpeed,
+    ReplayState,
+    ReplayStatus,
+    StateUpdateCallback,
+)
+from core.engine.risk import (
+    AccountSnapshot,
+    AlertCallback,
+    IRiskController,
+    LiquidationCallback,
+    RiskConfig,
+    RiskController,
+    RiskLevel,
+    RiskTriggerEvent,
+    RiskTriggerType,
+    TradeResult,
+)
 from core.engine.types import (
     BarData,
     Direction,
@@ -66,4 +96,31 @@ __all__ = [
     "MatchingQualityMetrics",
     "IMatchingEngine",
     "MatchingEngine",
+    # Snapshot manager
+    "AccountState",
+    "PositionState",
+    "StrategyState",
+    "Snapshot",
+    "ISnapshotManager",
+    "SnapshotManager",
+    # Replay controller
+    "ReplayState",
+    "ReplaySpeed",
+    "ReplayConfig",
+    "ReplayStatus",
+    "IReplayController",
+    "ReplayController",
+    "DataProvider",
+    "StateUpdateCallback",
+    # Risk controller
+    "RiskTriggerType",
+    "RiskLevel",
+    "RiskConfig",
+    "RiskTriggerEvent",
+    "AccountSnapshot",
+    "TradeResult",
+    "LiquidationCallback",
+    "AlertCallback",
+    "IRiskController",
+    "RiskController",
 ]

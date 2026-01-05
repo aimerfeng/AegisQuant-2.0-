@@ -5,6 +5,14 @@ This module implements a data provider for MySQL databases.
 It provides access to historical market data stored in MySQL tables.
 
 Requirements: Data source extension - MySQL data source connection and query
+
+Performance Notes (Audit 2026-01-05):
+- Uses DictCursor for efficient row iteration (no ORM overhead)
+- Direct dict access avoids Series boxing overhead
+- Uses raw SQL queries with pd.read_sql for bulk data loading
+- Bypasses ORM object hydration for better performance
+- TODO (v2.0): Implement server-side cursors for streaming large datasets
+- TODO (v2.0): Add connection pool for concurrent access
 """
 from __future__ import annotations
 
@@ -158,15 +166,25 @@ class MySQLDataProvider(AbstractDataProvider):
         
         Returns:
             True if disconnection successful, False otherwise.
+        
+        Note:
+            Handles connection timeouts gracefully to prevent pool exhaustion
+            (Audit 2026-01-05).
         """
         try:
             if self._connection is not None:
-                self._connection.close()
+                try:
+                    self._connection.close()
+                except Exception:
+                    # Connection may already be closed or timed out
+                    pass
             self._connection = None
             self._status = ProviderStatus.DISCONNECTED
             self._last_error = None
             return True
         except Exception as e:
+            self._connection = None
+            self._status = ProviderStatus.DISCONNECTED
             self._last_error = str(e)
             return False
     
