@@ -37,6 +37,9 @@ env/
 *.sublime-project
 *.sublime-workspace
 
+# Kiro specs (local development only)
+.kiro/
+
 # Testing
 .pytest_cache/
 .coverage
