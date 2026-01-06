@@ -15,7 +15,6 @@ import {
   OrderBookLevel,
   OrderBookDisplayMode,
   OrderBookTheme,
-  OrderBookState,
   AnimatedOrderBookLevel,
   PriceLevelChangeType,
   darkOrderBookTheme,
@@ -81,6 +80,7 @@ const detectChanges = (
 
 /**
  * Price Level Row Component
+ * Wrapped with React.memo for performance optimization on high-frequency updates
  */
 interface PriceLevelRowProps {
   level: AnimatedOrderBookLevel;
@@ -92,7 +92,7 @@ interface PriceLevelRowProps {
   onClick?: (price: number, side: 'bid' | 'ask') => void;
 }
 
-const PriceLevelRow: React.FC<PriceLevelRowProps> = ({
+const PriceLevelRow: React.FC<PriceLevelRowProps> = React.memo(({
   level,
   side,
   precision,
@@ -150,7 +150,18 @@ const PriceLevelRow: React.FC<PriceLevelRowProps> = ({
       <span className="orderbook-total">{formatNumber(level.total, volumePrecision)}</span>
     </div>
   );
-};
+}, (prevProps, nextProps) => {
+  // Custom comparison for performance - only re-render when relevant props change
+  return (
+    prevProps.level.price === nextProps.level.price &&
+    prevProps.level.volume === nextProps.level.volume &&
+    prevProps.level.total === nextProps.level.total &&
+    prevProps.level.changeType === nextProps.level.changeType &&
+    prevProps.side === nextProps.side &&
+    prevProps.precision === nextProps.precision &&
+    prevProps.volumePrecision === nextProps.volumePrecision
+  );
+});
 
 
 /**
@@ -309,7 +320,7 @@ const OrderBook: React.FC<OrderBookProps> = ({
   volumePrecision = 4,
   theme = darkOrderBookTheme,
   onPriceClick,
-  onVolumeClick,
+  // onVolumeClick - reserved for future use
   animateUpdates = true,
   width,
   height,
@@ -489,7 +500,7 @@ const OrderBook: React.FC<OrderBookProps> = ({
             
             {/* Asks (sell orders) - displayed in reverse order */}
             <div className="orderbook-asks">
-              {animatedAsks.slice().reverse().map((level, index) => (
+              {animatedAsks.slice().reverse().map((level) => (
                 <PriceLevelRow
                   key={`ask-${level.price}`}
                   level={level}
@@ -514,7 +525,7 @@ const OrderBook: React.FC<OrderBookProps> = ({
             
             {/* Bids (buy orders) */}
             <div className="orderbook-bids">
-              {animatedBids.map((level, index) => (
+              {animatedBids.map((level) => (
                 <PriceLevelRow
                   key={`bid-${level.price}`}
                   level={level}

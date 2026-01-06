@@ -26,10 +26,11 @@ import threading
 import time
 import uuid
 from abc import ABC, abstractmethod
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional, Set, TYPE_CHECKING
+from typing import Any, Callable, Coroutine, Dict, List, Optional, Set, TYPE_CHECKING, Union
 
 try:
     import websockets
@@ -187,8 +188,8 @@ class ClientInfo:
         return elapsed < timeout_seconds
 
 
-# Type alias for message handlers
-MessageHandler = Callable[[Message], Optional[Message]]
+# Type alias for message handlers (supports both sync and async)
+MessageHandler = Callable[[Message], Union[Optional[Message], Coroutine[Any, Any, Optional[Message]]]]
 
 
 @dataclass
@@ -301,6 +302,9 @@ class WebSocketServer(IWebSocketServer):
         self._running = False
         self._loop: Optional[asyncio.AbstractEventLoop] = None
         
+        # Thread pool for CPU-intensive tasks (prevents blocking event loop)
+        self._executor: Optional[Any] = None
+        
         # Connected clients: client_id -> ClientInfo
         self._clients: Dict[str, ClientInfo] = {}
         
@@ -349,6 +353,9 @@ class WebSocketServer(IWebSocketServer):
         
         try:
             self._loop = asyncio.get_event_loop()
+            
+            # Initialize thread pool for CPU-intensive tasks
+            self._executor = ThreadPoolExecutor(max_workers=4, thread_name_prefix="ws_worker")
             
             # Start the WebSocket server
             self._server = await websockets.serve(
@@ -407,6 +414,11 @@ class WebSocketServer(IWebSocketServer):
             self._server.close()
             await self._server.wait_closed()
             self._server = None
+        
+        # Shutdown thread pool executor
+        if self._executor:
+            self._executor.shutdown(wait=True)
+            self._executor = None
         
         logger.info("WebSocket server stopped")
     
@@ -494,6 +506,34 @@ class WebSocketServer(IWebSocketServer):
         """Check if server is running."""
         return self._running
     
+    async def run_cpu_bound(self, func: Callable[..., Any], *args: Any, **kwargs: Any) -> Any:
+        """
+        Run a CPU-intensive function in a thread pool to avoid blocking the event loop.
+        
+        Use this for handlers that perform heavy computation (e.g., backtest calculations).
+        
+        Args:
+            func: The function to run.
+            *args: Positional arguments for the function.
+            **kwargs: Keyword arguments for the function.
+        
+        Returns:
+            The result of the function.
+        
+        Example:
+            >>> async def handle_backtest(msg: Message) -> Optional[Message]:
+            ...     result = await server.run_cpu_bound(run_backtest, msg.payload)
+            ...     return Message.create(MessageType.RESPONSE, result)
+        """
+        if not self._loop or not self._executor:
+            raise RuntimeError("Server not running")
+        
+        import functools
+        if kwargs:
+            func = functools.partial(func, **kwargs)
+        
+        return await self._loop.run_in_executor(self._executor, func, *args)
+    
     async def _handle_connection(self, websocket: WebSocketServerProtocol) -> None:
         """
         Handle a new WebSocket connection.
@@ -549,6 +589,9 @@ class WebSocketServer(IWebSocketServer):
         """
         Process an incoming message from a client.
         
+        Supports both sync and async handlers. CPU-intensive handlers should be
+        async and use run_in_executor to avoid blocking the event loop.
+        
         Args:
             client_id: The client ID.
             raw_message: The raw message string.
@@ -566,7 +609,12 @@ class WebSocketServer(IWebSocketServer):
             
             if handler:
                 try:
-                    response = handler(message)
+                    # Support both sync and async handlers
+                    result = handler(message)
+                    if asyncio.iscoroutine(result):
+                        response = await result
+                    else:
+                        response = result
                     
                     # Send response if handler returned one
                     if response:
