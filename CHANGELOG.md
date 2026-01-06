@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [Task 27.5] 审计修复：Decimal 精度验证 - 2026-01-06
+
+### Changed
+- [Task 27.5.1] 验证并修复价格/数量计算精度
+  - 更新 core/engine/matching.py:
+    - `MatchingConfig`: commission_rate, slippage_value, min_commission 从 float 改为 Decimal
+    - `MatchingQualityMetrics`: fill_rate, avg_slippage, max_slippage, total_commission, total_turnover 从 float 改为 Decimal
+    - `_calculate_slippage()`: 直接使用 Decimal 配置值，无需转换
+    - `_calculate_commission()`: 直接使用 Decimal 配置值，无需转换
+    - `_update_metrics_for_trade()`: 使用 Decimal 算术更新指标
+    - `get_quality_metrics()`: 使用 Decimal 计算滑点分布
+    - 所有序列化方法使用字符串保持 Decimal 精度
+  - 满足 Requirements 7.7
+
+### Added
+- 添加 Decimal 精度测试用例 (tests/test_matching_engine.py):
+  - `TestDecimalPrecision` 测试类:
+    - `test_no_floating_point_accumulation_error`: 验证 1000 笔小额交易无精度累积误差
+    - `test_commission_precision_over_many_trades`: 验证手续费计算精度
+    - `test_slippage_precision`: 验证滑点计算精度
+    - `test_metrics_decimal_precision`: 验证指标类型为 Decimal
+    - `test_config_decimal_serialization_roundtrip`: 验证配置序列化往返精度
+    - `test_trade_record_decimal_serialization_roundtrip`: 验证成交记录序列化往返精度
+    - `test_long_backtest_no_precision_drift`: 属性测试验证长期回测无精度漂移
+
+### Files Changed
+- core/engine/matching.py (修改)
+- tests/test_matching_engine.py (新增测试)
+
 ## [Task 28] 前端项目初始化 - 2026-01-06
 
 ### Added
@@ -1289,3 +1318,84 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ✅ 所有 14 个报告模块测试通过
 - ✅ Property 25: Report Metrics Completeness (Hypothesis 100 examples)
 - 测试执行时间: 2.86s
+
+
+## [Task 29] 前端布局系统 - 2026-01-06
+
+### Added
+- [Task 29.1] 实现 Golden-Layout 集成
+  - 创建 ui/src/renderer/layouts/WorkspaceLayout.tsx
+  - 实现 Golden-Layout 多窗口拖拽、吸附、分屏功能
+  - 创建 ui/src/renderer/types/layout.ts (布局类型定义)
+    - PanelType 枚举 (KLINE_CHART, ORDER_BOOK, STRATEGY_LAB, LOG_PANEL, POSITIONS, TRADES, CONTROL_PANEL, DATA_CENTER, REPORTS)
+    - PanelConfig, WorkspacePreset, LayoutPersistenceData 数据类型
+    - PanelRegistration, PanelComponentProps 接口
+  - 创建 ui/src/renderer/stores/layoutStore.ts (Zustand 布局状态管理)
+    - 布局配置状态管理
+    - 预设保存/加载/删除
+    - 面板注册/注销
+    - 布局导入/导出
+  - 创建 ui/src/renderer/components/panels/ 目录
+    - PlaceholderPanel.tsx (占位面板组件)
+    - panelFactory.tsx (面板工厂，创建各类型面板)
+  - 创建 ui/src/renderer/layouts/WorkspaceLayout.css (Golden-Layout 主题样式)
+  - 满足 Requirements 4.1, 4.2
+
+- [Task 29.2] 实现布局持久化
+  - 创建 ui/src/renderer/utils/layoutPersistence.ts
+    - saveLayoutToStorage() / loadLayoutFromStorage() 本地存储
+    - savePresetsToStorage() / loadPresetsFromStorage() 预设存储
+    - exportLayoutToJson() / importLayoutFromJson() JSON 导入导出
+    - downloadLayoutAsFile() / readLayoutFromFile() 文件导入导出
+    - isValidLayoutConfig() 布局配置验证
+    - cloneLayoutConfig() 深拷贝
+  - 创建 ui/src/renderer/components/LayoutToolbar.tsx
+    - 预设管理菜单 (保存/加载/删除预设)
+    - 布局重置功能
+    - 布局导入/导出功能
+    - 通知提示
+  - 更新 ui/src/renderer/components/MainLayout.tsx 集成 LayoutToolbar
+  - 更新 i18n 语言包添加布局相关翻译键
+  - 满足 Requirements 4.3, 4.4
+
+- [Task 29.3] 编写布局持久化属性测试 ✓ PASSED
+  - 创建 ui/src/renderer/__tests__/layoutPersistence.test.ts
+  - Property 8: Layout Persistence Round-Trip
+    - 测试布局数据导出/导入往返一致性
+    - 测试布局配置克隆操作
+    - 测试布局配置验证
+    - 测试无效配置拒绝
+    - 测试 JSON 解析错误处理
+    - 测试预设元数据往返
+    - 测试组件状态往返
+  - 使用 fast-check 库实现属性测试
+  - 7 个测试全部通过 (100 次迭代/测试)
+  - 满足 Requirements 4.3, 4.4
+
+### Changed
+- 更新 ui/package.json 添加 fast-check, identity-obj-proxy, jest-environment-jsdom 依赖
+- 更新 ui/src/renderer/i18n/locales/en.json 添加布局相关翻译
+- 更新 ui/src/renderer/i18n/locales/zh_cn.json 添加布局相关翻译
+- 更新 ui/src/renderer/i18n/locales/zh_tw.json 添加布局相关翻译
+
+### Files Changed
+- ui/src/renderer/types/layout.ts (新增)
+- ui/src/renderer/stores/layoutStore.ts (新增)
+- ui/src/renderer/layouts/WorkspaceLayout.tsx (新增)
+- ui/src/renderer/layouts/WorkspaceLayout.css (新增)
+- ui/src/renderer/layouts/index.ts (新增)
+- ui/src/renderer/components/panels/PlaceholderPanel.tsx (新增)
+- ui/src/renderer/components/panels/PlaceholderPanel.css (新增)
+- ui/src/renderer/components/panels/panelFactory.tsx (新增)
+- ui/src/renderer/components/panels/index.ts (新增)
+- ui/src/renderer/components/LayoutToolbar.tsx (新增)
+- ui/src/renderer/components/LayoutToolbar.css (新增)
+- ui/src/renderer/components/MainLayout.tsx (修改)
+- ui/src/renderer/components/MainLayout.css (修改)
+- ui/src/renderer/utils/layoutPersistence.ts (新增)
+- ui/src/renderer/utils/index.ts (新增)
+- ui/src/renderer/__tests__/layoutPersistence.test.ts (新增)
+- ui/src/renderer/i18n/locales/en.json (修改)
+- ui/src/renderer/i18n/locales/zh_cn.json (修改)
+- ui/src/renderer/i18n/locales/zh_tw.json (修改)
+- ui/package.json (修改)

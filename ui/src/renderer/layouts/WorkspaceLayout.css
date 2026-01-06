@@ -1,0 +1,243 @@
+/**
+ * Workspace Layout Styles
+ * 
+ * Styles for Golden-Layout integration and workspace management.
+ */
+
+/* Main container */
+.workspace-layout-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Golden-Layout component container */
+.gl-component-container {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: var(--color-bg-primary);
+}
+
+/* Loading state */
+.workspace-layout-loading {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-bg-primary);
+}
+
+.loading-content {
+  text-align: center;
+  color: var(--color-text-secondary);
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--color-border);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto var(--spacing-md);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Error state */
+.workspace-layout-error {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-bg-primary);
+}
+
+.error-content {
+  text-align: center;
+  padding: var(--spacing-xl);
+  max-width: 400px;
+}
+
+.error-icon {
+  font-size: 48px;
+  display: block;
+  margin-bottom: var(--spacing-md);
+}
+
+.error-content h3 {
+  color: var(--color-error);
+  margin: 0 0 var(--spacing-sm) 0;
+}
+
+.error-content p {
+  color: var(--color-text-secondary);
+  margin: 0 0 var(--spacing-lg) 0;
+}
+
+.retry-button {
+  padding: var(--spacing-sm) var(--spacing-lg);
+  background-color: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  transition: background-color 0.2s;
+}
+
+.retry-button:hover {
+  background-color: var(--color-primary-hover);
+}
+
+/* Golden-Layout Theme Overrides */
+
+/* Header/Tab styling */
+.lm_header {
+  background-color: var(--color-bg-tertiary) !important;
+  border-bottom: 1px solid var(--color-border) !important;
+}
+
+.lm_tabs {
+  background-color: transparent !important;
+}
+
+.lm_tab {
+  background-color: var(--color-bg-secondary) !important;
+  color: var(--color-text-secondary) !important;
+  border: 1px solid var(--color-border) !important;
+  border-bottom: none !important;
+  margin-right: 2px !important;
+  padding: 4px 12px !important;
+  font-size: var(--font-size-sm) !important;
+}
+
+.lm_tab:hover {
+  background-color: var(--color-bg-tertiary) !important;
+  color: var(--color-text-primary) !important;
+}
+
+.lm_tab.lm_active {
+  background-color: var(--color-bg-primary) !important;
+  color: var(--color-text-primary) !important;
+  border-bottom: 1px solid var(--color-bg-primary) !important;
+  margin-bottom: -1px !important;
+}
+
+/* Close button */
+.lm_close_tab {
+  background-color: transparent !important;
+  opacity: 0.6;
+}
+
+.lm_close_tab:hover {
+  opacity: 1;
+}
+
+/* Content area */
+.lm_content {
+  background-color: var(--color-bg-primary) !important;
+  border: 1px solid var(--color-border) !important;
+  border-top: none !important;
+}
+
+/* Splitter/Drag handles */
+.lm_splitter {
+  background-color: var(--color-border) !important;
+  opacity: 1 !important;
+}
+
+.lm_splitter:hover {
+  background-color: var(--color-primary) !important;
+}
+
+.lm_splitter.lm_dragging {
+  background-color: var(--color-primary) !important;
+}
+
+/* Drop target indicators */
+.lm_drop_tab_placeholder {
+  background-color: var(--color-primary) !important;
+  opacity: 0.3 !important;
+}
+
+.lm_dropTargetIndicator {
+  background-color: var(--color-primary) !important;
+  opacity: 0.2 !important;
+  outline: 2px dashed var(--color-primary) !important;
+}
+
+/* Stack (tabbed container) */
+.lm_stack {
+  background-color: var(--color-bg-secondary) !important;
+}
+
+/* Maximized state */
+.lm_maximised .lm_header {
+  background-color: var(--color-bg-tertiary) !important;
+}
+
+.lm_maximised .lm_content {
+  border: none !important;
+}
+
+/* Controls (maximize, close buttons in header) */
+.lm_controls {
+  display: flex;
+  align-items: center;
+}
+
+.lm_controls > li {
+  cursor: pointer;
+  opacity: 0.6;
+  padding: 2px 4px;
+}
+
+.lm_controls > li:hover {
+  opacity: 1;
+}
+
+/* Popout window styling */
+.lm_popin {
+  cursor: pointer;
+}
+
+/* Item container */
+.lm_item_container {
+  background-color: var(--color-bg-primary) !important;
+}
+
+/* Drag proxy (floating window during drag) */
+.lm_dragProxy {
+  background-color: var(--color-bg-secondary) !important;
+  border: 2px solid var(--color-primary) !important;
+  border-radius: var(--border-radius) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+.lm_dragProxy .lm_header {
+  background-color: var(--color-primary) !important;
+}
+
+.lm_dragProxy .lm_title {
+  color: white !important;
+}
+
+/* Title styling */
+.lm_title {
+  font-size: var(--font-size-sm) !important;
+  font-weight: 500 !important;
+}
+
+/* Transition animations */
+.lm_transition_indicator {
+  transition: all 0.2s ease-out !important;
+}
