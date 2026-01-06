@@ -188,3 +188,8 @@ celerybeat.pid
 
 # pyright
 pyrightconfig.json
+
+
+# Electron build output
+ui/release/
+ui/dist/
