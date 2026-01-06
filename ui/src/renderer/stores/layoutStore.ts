@@ -21,7 +21,7 @@ import {
  * Generate unique ID for presets
  */
 const generatePresetId = (): string => {
-  return `preset-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  return `preset-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
 };
 
 /**
@@ -84,9 +84,6 @@ const createDefaultLayout = (): LayoutConfig => ({
   },
   header: {
     popout: false,
-    maximise: true,
-    close: true,
-    minimise: false,
   },
 });
 

@@ -1,0 +1,149 @@
+/**
+ * Titan-Quant Data Center Styles
+ * 
+ * Main styling for the Data Center component.
+ * Requirements: 2.1, 2.2, 2.3, Data Source Extension
+ */
+
+.data-center {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: var(--bg-primary, #1e1e1e);
+  color: var(--text-primary, #cccccc);
+}
+
+/* Header */
+.data-center-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background-color: var(--bg-tertiary, #252526);
+  border-bottom: 1px solid var(--border-color, #3c3c3c);
+}
+
+.data-center-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary, #cccccc);
+}
+
+/* Tab Navigation */
+.data-center-tabs {
+  display: flex;
+  gap: 0;
+  background-color: var(--bg-secondary, #1e1e1e);
+  border-bottom: 1px solid var(--border-color, #3c3c3c);
+}
+
+.data-center-tabs .tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  font-size: 13px;
+  color: var(--text-secondary, #858585);
+  background-color: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.data-center-tabs .tab-btn:hover {
+  color: var(--text-primary, #cccccc);
+  background-color: var(--bg-hover, #2a2d2e);
+}
+
+.data-center-tabs .tab-btn.active {
+  color: var(--text-primary, #cccccc);
+  border-bottom-color: var(--accent-color, #0e639c);
+}
+
+/* Tab Content */
+.data-center-content {
+  flex: 1;
+  overflow: auto;
+  padding: 16px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .data-center-header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .data-center-tabs {
+    overflow-x: auto;
+  }
+
+  .data-center-tabs .tab-btn {
+    padding: 8px 12px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  .data-center-content {
+    padding: 12px;
+  }
+}
+
+/* Panel transitions */
+.data-center-content > * {
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Loading state */
+.data-center.loading {
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+/* Error state */
+.data-center-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 32px;
+  text-align: center;
+}
+
+.data-center-error-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.data-center-error-message {
+  font-size: 14px;
+  color: var(--error-color, #f44336);
+  margin-bottom: 16px;
+}
+
+.data-center-error-retry {
+  padding: 8px 16px;
+  font-size: 13px;
+  color: white;
+  background-color: var(--accent-color, #0e639c);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.data-center-error-retry:hover {
+  background-color: var(--accent-hover, #1177bb);
+}

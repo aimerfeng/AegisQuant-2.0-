@@ -1,0 +1,376 @@
+/**
+ * OrderBook Component Styles
+ */
+
+.orderbook-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  font-family: 'Roboto Mono', 'Consolas', monospace;
+  font-size: 12px;
+  overflow: hidden;
+}
+
+/* Header */
+.orderbook-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-color, #2b2f3a);
+}
+
+.orderbook-title {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.orderbook-symbol {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.orderbook-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.orderbook-mode-btn {
+  padding: 4px 8px;
+  border: 1px solid var(--border-color, #2b2f3a);
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-size: 11px;
+  transition: all 0.2s ease;
+}
+
+.orderbook-mode-btn:hover {
+  background: var(--highlight-color, #3d4f5f);
+}
+
+.orderbook-mode-btn.active {
+  background: var(--highlight-color, #3d4f5f);
+  border-color: var(--text-color, #d1d4dc);
+}
+
+/* Spread Section */
+.orderbook-spread {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 6px 12px;
+  border-top: 1px solid var(--border-color, #2b2f3a);
+  border-bottom: 1px solid var(--border-color, #2b2f3a);
+  font-size: 11px;
+}
+
+.spread-label {
+  margin-right: 8px;
+  opacity: 0.7;
+}
+
+.spread-value {
+  font-weight: 600;
+  margin-right: 4px;
+}
+
+.spread-percent {
+  opacity: 0.7;
+}
+
+/* Table Header */
+.orderbook-table-header {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  opacity: 0.7;
+  border-bottom: 1px solid var(--border-color, #2b2f3a);
+}
+
+.orderbook-table-header span {
+  text-align: right;
+}
+
+.orderbook-table-header span:first-child {
+  text-align: left;
+}
+
+/* Order Book Content */
+.orderbook-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Vertical Layout */
+.orderbook-vertical {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.orderbook-asks,
+.orderbook-bids {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.orderbook-asks {
+  display: flex;
+  flex-direction: column-reverse;
+}
+
+/* Price Level Row */
+.orderbook-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  padding: 3px 12px;
+  position: relative;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.orderbook-row:hover {
+  background-color: var(--highlight-color, #3d4f5f) !important;
+}
+
+.orderbook-row.bid {
+  background: linear-gradient(to left, var(--bid-bg-color, rgba(38, 166, 154, 0.15)) var(--volume-percent, 0%), transparent var(--volume-percent, 0%));
+}
+
+.orderbook-row.ask {
+  background: linear-gradient(to left, var(--ask-bg-color, rgba(239, 83, 80, 0.15)) var(--volume-percent, 0%), transparent var(--volume-percent, 0%));
+}
+
+/* Price Level Values */
+.orderbook-price,
+.orderbook-volume,
+.orderbook-total {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.orderbook-price {
+  text-align: left;
+}
+
+.orderbook-row.bid .orderbook-price {
+  color: var(--bid-color, #26a69a);
+}
+
+.orderbook-row.ask .orderbook-price {
+  color: var(--ask-color, #ef5350);
+}
+
+/* Animation Classes */
+.orderbook-row.flash-increase {
+  animation: flashIncrease 0.5s ease-out;
+}
+
+.orderbook-row.flash-decrease {
+  animation: flashDecrease 0.5s ease-out;
+}
+
+.orderbook-row.flash-new {
+  animation: flashNew 0.5s ease-out;
+}
+
+@keyframes flashIncrease {
+  0% {
+    background-color: rgba(38, 166, 154, 0.4);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+@keyframes flashDecrease {
+  0% {
+    background-color: rgba(239, 83, 80, 0.4);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+@keyframes flashNew {
+  0% {
+    background-color: rgba(255, 255, 255, 0.3);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+/* Horizontal Depth Chart */
+.orderbook-horizontal {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+}
+
+.depth-chart-container {
+  flex: 1;
+  position: relative;
+  min-height: 150px;
+}
+
+.depth-chart-svg {
+  width: 100%;
+  height: 100%;
+}
+
+.depth-area-bid {
+  fill: var(--bid-bg-color, rgba(38, 166, 154, 0.3));
+  stroke: var(--bid-color, #26a69a);
+  stroke-width: 1.5;
+}
+
+.depth-area-ask {
+  fill: var(--ask-bg-color, rgba(239, 83, 80, 0.3));
+  stroke: var(--ask-color, #ef5350);
+  stroke-width: 1.5;
+}
+
+.depth-midpoint-line {
+  stroke: var(--spread-color, #758696);
+  stroke-width: 1;
+  stroke-dasharray: 4, 4;
+}
+
+.depth-axis-label {
+  font-size: 10px;
+  fill: var(--text-color, #d1d4dc);
+  opacity: 0.7;
+}
+
+/* Combined Layout */
+.orderbook-combined {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.orderbook-combined .orderbook-vertical {
+  flex: 2;
+}
+
+.orderbook-combined .orderbook-horizontal {
+  flex: 1;
+  border-top: 1px solid var(--border-color, #2b2f3a);
+}
+
+/* Loading State */
+.orderbook-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  opacity: 0.7;
+}
+
+.orderbook-loading-spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--border-color, #2b2f3a);
+  border-top-color: var(--text-color, #d1d4dc);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Empty State */
+.orderbook-empty {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  opacity: 0.5;
+}
+
+.orderbook-empty-icon {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+
+.orderbook-empty-text {
+  font-size: 12px;
+}
+
+/* Last Price Display */
+.orderbook-last-price {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 8px 12px;
+  font-size: 14px;
+  font-weight: 600;
+  border-top: 1px solid var(--border-color, #2b2f3a);
+  border-bottom: 1px solid var(--border-color, #2b2f3a);
+}
+
+.last-price-value {
+  margin-left: 8px;
+}
+
+.last-price-value.up {
+  color: var(--bid-color, #26a69a);
+}
+
+.last-price-value.down {
+  color: var(--ask-color, #ef5350);
+}
+
+/* Scrollbar Styling */
+.orderbook-asks::-webkit-scrollbar,
+.orderbook-bids::-webkit-scrollbar {
+  width: 4px;
+}
+
+.orderbook-asks::-webkit-scrollbar-track,
+.orderbook-bids::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.orderbook-asks::-webkit-scrollbar-thumb,
+.orderbook-bids::-webkit-scrollbar-thumb {
+  background: var(--border-color, #2b2f3a);
+  border-radius: 2px;
+}
+
+.orderbook-asks::-webkit-scrollbar-thumb:hover,
+.orderbook-bids::-webkit-scrollbar-thumb:hover {
+  background: var(--highlight-color, #3d4f5f);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 400px) {
+  .orderbook-row {
+    padding: 2px 8px;
+  }
+  
+  .orderbook-header {
+    padding: 6px 8px;
+  }
+  
+  .orderbook-table-header {
+    padding: 4px 8px;
+  }
+}

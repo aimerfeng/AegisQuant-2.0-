@@ -1,0 +1,475 @@
+/**
+ * Titan-Quant Cleaning Preview Styles
+ * 
+ * Styling for the data cleaning preview component.
+ * Requirements: 2.2, 2.3
+ */
+
+.cleaning-preview {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: var(--bg-primary, #1e1e1e);
+  color: var(--text-primary, #cccccc);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.cleaning-preview.loading {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+/* Header */
+.cleaning-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background-color: var(--bg-tertiary, #252526);
+  border-bottom: 1px solid var(--border-color, #3c3c3c);
+}
+
+.cleaning-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary, #cccccc);
+}
+
+/* Configuration Panel */
+.cleaning-config {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 16px;
+  background-color: var(--bg-secondary, #252526);
+  border-bottom: 1px solid var(--border-color, #3c3c3c);
+}
+
+.config-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 150px;
+}
+
+.config-row.checkbox {
+  flex-direction: row;
+  align-items: center;
+}
+
+.config-label {
+  font-size: 12px;
+  color: var(--text-secondary, #858585);
+}
+
+.config-select,
+.config-input {
+  padding: 6px 10px;
+  font-size: 13px;
+  color: var(--text-primary, #cccccc);
+  background-color: var(--bg-primary, #1e1e1e);
+  border: 1px solid var(--border-color, #3c3c3c);
+  border-radius: 4px;
+  outline: none;
+}
+
+.config-select:focus,
+.config-input:focus {
+  border-color: var(--accent-color, #0e639c);
+}
+
+.config-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-primary, #cccccc);
+  cursor: pointer;
+}
+
+.config-checkbox-label input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.apply-btn {
+  padding: 8px 20px;
+  font-size: 13px;
+  font-weight: 500;
+  color: white;
+  background-color: var(--accent-color, #0e639c);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  align-self: flex-end;
+}
+
+.apply-btn:hover:not(:disabled) {
+  background-color: var(--accent-hover, #1177bb);
+}
+
+.apply-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Tabs */
+.cleaning-tabs {
+  display: flex;
+  gap: 0;
+  background-color: var(--bg-secondary, #1e1e1e);
+  border-bottom: 1px solid var(--border-color, #3c3c3c);
+}
+
+.cleaning-tabs .tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  font-size: 13px;
+  color: var(--text-secondary, #858585);
+  background-color: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cleaning-tabs .tab-btn:hover {
+  color: var(--text-primary, #cccccc);
+  background-color: var(--bg-hover, #2a2d2e);
+}
+
+.cleaning-tabs .tab-btn.active {
+  color: var(--text-primary, #cccccc);
+  border-bottom-color: var(--accent-color, #0e639c);
+}
+
+/* Content */
+.cleaning-content {
+  flex: 1;
+  overflow: auto;
+  padding: 16px;
+}
+
+/* Empty State */
+.cleaning-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  gap: 12px;
+}
+
+.empty-icon {
+  font-size: 48px;
+  opacity: 0.5;
+}
+
+.cleaning-empty p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-secondary, #858585);
+}
+
+/* Summary */
+.cleaning-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+}
+
+.stat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px;
+  background-color: var(--bg-secondary, #252526);
+  border-radius: 8px;
+  border: 1px solid var(--border-color, #3c3c3c);
+}
+
+.stat-card.warning {
+  border-color: var(--warning-color, #cca700);
+}
+
+.stat-card.error {
+  border-color: var(--error-color, #f44336);
+}
+
+.stat-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary, #cccccc);
+}
+
+.stat-card.warning .stat-value {
+  color: var(--warning-color, #cca700);
+}
+
+.stat-card.error .stat-value {
+  color: var(--error-color, #f44336);
+}
+
+.stat-label {
+  font-size: 12px;
+  color: var(--text-secondary, #858585);
+  margin-top: 4px;
+}
+
+/* Summary Sections */
+.summary-section {
+  background-color: var(--bg-secondary, #252526);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.section-title {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary, #cccccc);
+}
+
+.column-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.column-stat {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background-color: var(--bg-primary, #1e1e1e);
+  border-radius: 4px;
+}
+
+.column-name {
+  font-size: 12px;
+  color: var(--text-primary, #cccccc);
+  font-family: 'Fira Code', monospace;
+}
+
+.column-count {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--warning-color, #cca700);
+}
+
+.gap-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.gap-item {
+  padding: 4px 8px;
+  font-size: 11px;
+  color: var(--text-secondary, #858585);
+  background-color: var(--bg-primary, #1e1e1e);
+  border-radius: 4px;
+  font-family: 'Fira Code', monospace;
+}
+
+.gap-more {
+  font-size: 11px;
+  color: var(--text-secondary, #858585);
+}
+
+/* No Issues */
+.no-issues {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px;
+  gap: 12px;
+}
+
+.no-issues-icon {
+  font-size: 48px;
+}
+
+.no-issues p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--success-color, #4caf50);
+}
+
+/* Data Preview Table */
+.data-preview-table-container {
+  overflow: auto;
+  max-height: 400px;
+  border: 1px solid var(--border-color, #3c3c3c);
+  border-radius: 4px;
+}
+
+.data-preview-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.data-preview-table th,
+.data-preview-table td {
+  padding: 8px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color, #3c3c3c);
+  white-space: nowrap;
+}
+
+.data-preview-table th {
+  position: sticky;
+  top: 0;
+  background-color: var(--bg-tertiary, #333333);
+  color: var(--text-primary, #cccccc);
+  font-weight: 600;
+  z-index: 1;
+}
+
+.data-preview-table td {
+  background-color: var(--bg-primary, #1e1e1e);
+  color: var(--text-primary, #cccccc);
+}
+
+.data-preview-table tr:hover td {
+  background-color: var(--bg-hover, #2a2d2e);
+}
+
+.row-index-header,
+.row-index {
+  color: var(--text-secondary, #858585);
+  font-family: 'Fira Code', monospace;
+  width: 50px;
+}
+
+/* Cell States */
+.cell-missing {
+  background-color: rgba(204, 167, 0, 0.15) !important;
+  position: relative;
+}
+
+.cell-outlier {
+  background-color: rgba(244, 67, 54, 0.15) !important;
+  position: relative;
+}
+
+.cell-warning {
+  background-color: rgba(204, 167, 0, 0.1) !important;
+}
+
+.cell-error {
+  background-color: rgba(244, 67, 54, 0.1) !important;
+}
+
+.null-value {
+  color: var(--text-secondary, #858585);
+  font-style: italic;
+}
+
+.issue-indicator {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  font-size: 10px;
+}
+
+/* Issues List */
+.issues-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.issue-item {
+  padding: 12px 16px;
+  background-color: var(--bg-secondary, #252526);
+  border-radius: 8px;
+  border-left: 3px solid var(--border-color, #3c3c3c);
+}
+
+.issue-item.warning {
+  border-left-color: var(--warning-color, #cca700);
+}
+
+.issue-item.error {
+  border-left-color: var(--error-color, #f44336);
+}
+
+.issue-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.issue-type {
+  font-size: 16px;
+}
+
+.issue-location {
+  font-size: 12px;
+  color: var(--text-secondary, #858585);
+  font-family: 'Fira Code', monospace;
+}
+
+.issue-severity {
+  margin-left: auto;
+  padding: 2px 8px;
+  font-size: 11px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.issue-severity.warning {
+  color: var(--warning-color, #cca700);
+  background-color: rgba(204, 167, 0, 0.15);
+}
+
+.issue-severity.error {
+  color: var(--error-color, #f44336);
+  background-color: rgba(244, 67, 54, 0.15);
+}
+
+.issue-message {
+  margin: 0 0 8px 0;
+  font-size: 13px;
+  color: var(--text-primary, #cccccc);
+}
+
+.issue-value {
+  font-size: 11px;
+  color: var(--text-secondary, #858585);
+  font-family: 'Fira Code', monospace;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .cleaning-config {
+    flex-direction: column;
+  }
+
+  .config-row {
+    width: 100%;
+  }
+
+  .apply-btn {
+    width: 100%;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

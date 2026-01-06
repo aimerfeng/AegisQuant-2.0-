@@ -1,0 +1,516 @@
+/**
+ * Reports Component Styles
+ * 
+ * Styles for the backtest report viewer component.
+ */
+
+.reports-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  overflow: hidden;
+}
+
+/* Loading State */
+.reports-loading {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-md);
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--color-border);
+  border-top-color: var(--color-accent);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Error State */
+.reports-error {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-md);
+}
+
+.error-icon {
+  font-size: 48px;
+}
+
+.error-message {
+  color: var(--color-error);
+  font-size: var(--font-size-md);
+}
+
+/* Empty State */
+.reports-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-lg);
+}
+
+.empty-icon {
+  font-size: 64px;
+  opacity: 0.5;
+}
+
+.empty-title {
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  margin: 0;
+}
+
+.empty-description {
+  font-size: var(--font-size-md);
+  color: var(--color-text-muted);
+  margin: 0;
+  text-align: center;
+}
+
+/* Header */
+.reports-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-md);
+  background-color: var(--color-bg-secondary);
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.reports-title-section {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.reports-title {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  margin: 0;
+}
+
+.reports-strategy {
+  font-size: var(--font-size-md);
+  color: var(--color-accent);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background-color: var(--color-bg-tertiary);
+  border-radius: var(--radius-sm);
+}
+
+.reports-date {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.reports-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+/* View Mode Tabs */
+.view-mode-tabs {
+  display: flex;
+  gap: var(--spacing-xs);
+  background-color: var(--color-bg-tertiary);
+  padding: var(--spacing-xs);
+  border-radius: var(--radius-sm);
+}
+
+.tab-btn {
+  padding: var(--spacing-xs) var(--spacing-md);
+  font-size: var(--font-size-sm);
+  background: transparent;
+  border: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+}
+
+.tab-btn:hover {
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-hover);
+}
+
+.tab-btn.active {
+  color: var(--color-text-primary);
+  background-color: var(--color-accent);
+}
+
+/* Export Buttons */
+.export-buttons {
+  display: flex;
+  gap: var(--spacing-xs);
+}
+
+.export-btn {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  background-color: var(--color-bg-tertiary);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+}
+
+.export-btn:hover {
+  background-color: var(--color-bg-hover);
+  color: var(--color-text-primary);
+}
+
+/* Content */
+.reports-content {
+  flex: 1;
+  overflow: auto;
+  padding: var(--spacing-md);
+}
+
+/* Summary View */
+.summary-view {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.metrics-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.section-title {
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin: 0;
+  padding-bottom: var(--spacing-sm);
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* Metrics Grid */
+.metrics-grid {
+  display: grid;
+  gap: var(--spacing-md);
+}
+
+.primary-metrics {
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.secondary-metrics {
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}
+
+/* Metric Card */
+.metric-card {
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  transition: border-color var(--transition-fast);
+}
+
+.metric-card:hover {
+  border-color: var(--color-border-light);
+}
+
+.metric-card-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.metric-icon {
+  font-size: var(--font-size-lg);
+}
+
+.metric-label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.metric-value {
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+}
+
+.metric-value.value-positive {
+  color: var(--color-profit);
+}
+
+.metric-value.value-negative {
+  color: var(--color-loss);
+}
+
+/* Equity Section */
+.equity-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+/* Equity View */
+.equity-view {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Equity Chart */
+.equity-chart-container {
+  width: 100%;
+  height: 100%;
+  min-height: 300px;
+  position: relative;
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.equity-chart-svg {
+  display: block;
+}
+
+.equity-chart-empty {
+  width: 100%;
+  height: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-muted);
+}
+
+.chart-grid-line {
+  stroke: var(--color-border);
+  stroke-width: 1;
+  stroke-dasharray: 4, 4;
+}
+
+.chart-line {
+  fill: none;
+  stroke: var(--color-accent);
+  stroke-width: 2;
+}
+
+.chart-area {
+  fill: rgba(0, 120, 212, 0.1);
+}
+
+.chart-axis-label {
+  font-size: var(--font-size-xs);
+  fill: var(--color-text-muted);
+}
+
+.chart-tooltip-dot {
+  fill: var(--color-accent);
+  stroke: var(--color-bg-primary);
+  stroke-width: 2;
+}
+
+.chart-tooltip-line {
+  stroke: var(--color-accent);
+  stroke-width: 1;
+  stroke-dasharray: 4, 4;
+  opacity: 0.5;
+}
+
+/* Equity Chart Tooltip */
+.equity-chart-tooltip {
+  position: absolute;
+  background-color: var(--color-bg-tertiary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  pointer-events: none;
+  z-index: 100;
+  min-width: 180px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.tooltip-row {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  padding: var(--spacing-xs) 0;
+}
+
+.tooltip-label {
+  color: var(--color-text-muted);
+}
+
+.tooltip-value {
+  font-weight: 500;
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+}
+
+/* Trades View */
+.trades-view {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.trade-list-container {
+  flex: 1;
+  overflow: auto;
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.trade-list-empty {
+  width: 100%;
+  height: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-muted);
+}
+
+.trade-list-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+}
+
+.trade-list-table th,
+.trade-list-table td {
+  padding: var(--spacing-sm) var(--spacing-md);
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.trade-list-table th {
+  background-color: var(--color-bg-tertiary);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  user-select: none;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.trade-list-table th:hover {
+  background-color: var(--color-bg-hover);
+}
+
+.trade-list-table tr:hover {
+  background-color: var(--color-bg-hover);
+}
+
+.trade-list-table tr.manual-trade {
+  background-color: rgba(255, 152, 0, 0.1);
+}
+
+.trade-list-table .direction-long {
+  color: var(--color-long);
+  font-weight: 500;
+}
+
+.trade-list-table .direction-short {
+  color: var(--color-short);
+  font-weight: 500;
+}
+
+/* Footer */
+.reports-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: var(--color-bg-secondary);
+  border-top: 1px solid var(--color-border);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+.matching-info {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.report-id {
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .reports-header {
+    flex-direction: column;
+    gap: var(--spacing-md);
+    align-items: flex-start;
+  }
+
+  .reports-actions {
+    width: 100%;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+  }
+
+  .view-mode-tabs {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .export-buttons {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .primary-metrics,
+  .secondary-metrics {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .metric-value {
+    font-size: var(--font-size-lg);
+  }
+}
+
+@media (max-width: 480px) {
+  .primary-metrics,
+  .secondary-metrics {
+    grid-template-columns: 1fr;
+  }
+}

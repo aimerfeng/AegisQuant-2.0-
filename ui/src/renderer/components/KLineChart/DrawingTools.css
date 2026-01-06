@@ -1,0 +1,258 @@
+/**
+ * Drawing Tools Styles
+ */
+
+.drawing-tools-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+/* Drawing toolbar */
+.drawing-toolbar {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background-color: rgba(30, 34, 45, 0.95);
+  border: 1px solid var(--border-color, #2b2f3a);
+  border-radius: 6px;
+  padding: 4px;
+  z-index: 100;
+}
+
+.tool-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.2s, opacity 0.2s;
+}
+
+.tool-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.tool-btn.active {
+  background-color: rgba(33, 150, 243, 0.3);
+}
+
+.tool-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.tool-btn:disabled:hover {
+  background-color: transparent;
+}
+
+.toolbar-divider {
+  width: 1px;
+  height: 20px;
+  background-color: var(--border-color, #2b2f3a);
+  margin: 0 4px;
+}
+
+.clear-btn:hover:not(:disabled) {
+  background-color: rgba(239, 83, 80, 0.2);
+}
+
+/* Drawing overlay */
+.drawing-overlay {
+  position: absolute;
+  top: 44px; /* Below header */
+  left: 0;
+  pointer-events: none;
+  z-index: 50;
+}
+
+.drawing-overlay.active {
+  pointer-events: auto;
+  cursor: crosshair;
+}
+
+/* Drawing elements */
+.drawing {
+  cursor: pointer;
+}
+
+.drawing.selected line,
+.drawing.selected rect {
+  filter: drop-shadow(0 0 3px rgba(33, 150, 243, 0.5));
+}
+
+/* Control points */
+.control-point {
+  fill: #ffffff;
+  stroke: #2196F3;
+  stroke-width: 2;
+  cursor: move;
+  pointer-events: auto;
+}
+
+.control-point:hover {
+  fill: #2196F3;
+}
+
+/* Trend line */
+.trend-line line {
+  pointer-events: stroke;
+  stroke-linecap: round;
+}
+
+.trend-line line:hover {
+  stroke-width: 3;
+}
+
+/* Fibonacci */
+.fibonacci line {
+  pointer-events: stroke;
+}
+
+.fibonacci-label {
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Rectangle */
+.rectangle rect {
+  pointer-events: all;
+}
+
+.rectangle rect:hover {
+  stroke-width: 2;
+}
+
+/* Drawing info panel */
+.drawing-info-panel {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  background-color: rgba(30, 34, 45, 0.95);
+  border: 1px solid var(--border-color, #2b2f3a);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 11px;
+  color: var(--text-secondary, #787b86);
+  z-index: 100;
+}
+
+.drawing-info-panel .info-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 4px;
+}
+
+.drawing-info-panel .info-row:last-child {
+  margin-bottom: 0;
+}
+
+.drawing-info-panel .label {
+  color: var(--text-secondary, #787b86);
+}
+
+.drawing-info-panel .value {
+  color: var(--text-primary, #d1d4dc);
+  font-family: monospace;
+}
+
+/* Drawing context menu */
+.drawing-context-menu {
+  position: absolute;
+  background-color: rgba(30, 34, 45, 0.98);
+  border: 1px solid var(--border-color, #2b2f3a);
+  border-radius: 6px;
+  padding: 4px 0;
+  min-width: 120px;
+  z-index: 200;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.context-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  font-size: 12px;
+  color: var(--text-primary, #d1d4dc);
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.context-menu-item:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.context-menu-item.danger {
+  color: #ef5350;
+}
+
+.context-menu-item.danger:hover {
+  background-color: rgba(239, 83, 80, 0.1);
+}
+
+.context-menu-divider {
+  height: 1px;
+  background-color: var(--border-color, #2b2f3a);
+  margin: 4px 0;
+}
+
+/* Color picker for drawings */
+.color-picker-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+}
+
+.color-picker-container label {
+  font-size: 12px;
+  color: var(--text-secondary, #787b86);
+}
+
+.color-picker-container input[type="color"] {
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  background: transparent;
+}
+
+.color-picker-container input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.color-picker-container input[type="color"]::-webkit-color-swatch {
+  border: 1px solid var(--border-color, #2b2f3a);
+  border-radius: 4px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .drawing-toolbar {
+    top: 4px;
+    left: 4px;
+    padding: 2px;
+  }
+
+  .tool-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+  }
+
+  .drawing-info-panel {
+    font-size: 10px;
+    padding: 6px 8px;
+  }
+}

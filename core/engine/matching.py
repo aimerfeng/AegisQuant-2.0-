@@ -91,22 +91,31 @@ class MatchingConfig:
     Attributes:
         mode: Matching mode (L1 or L2)
         l2_level: L2 simulation level (required if mode is L2)
-        commission_rate: Commission rate as a decimal (e.g., 0.0003 for 0.03%)
+        commission_rate: Commission rate as a Decimal (e.g., 0.0003 for 0.03%)
         slippage_model: Slippage calculation model
-        slippage_value: Base slippage value (interpretation depends on model)
-        min_commission: Minimum commission per trade
+        slippage_value: Base slippage value as Decimal (interpretation depends on model)
+        min_commission: Minimum commission per trade as Decimal
         enable_partial_fill: Whether to allow partial order fills
+    
+    Note:
+        TD-001 Resolution: commission_rate/slippage_value/min_commission use Decimal
+        to avoid IEEE 754 floating-point precision errors in financial calculations.
     """
     mode: MatchingMode
     l2_level: Optional[L2SimulationLevel] = None
-    commission_rate: float = 0.0003
+    commission_rate: Decimal = field(default_factory=lambda: Decimal("0.0003"))
     slippage_model: SlippageModel = SlippageModel.FIXED
-    slippage_value: float = 0.0001
-    min_commission: float = 0.0
+    slippage_value: Decimal = field(default_factory=lambda: Decimal("0.0001"))
+    min_commission: Decimal = field(default_factory=lambda: Decimal("0"))
     enable_partial_fill: bool = True
     
     def __post_init__(self) -> None:
-        """Validate configuration after initialization."""
+        """Validate and convert configuration after initialization."""
+        # Convert to Decimal if needed (for backward compatibility with float inputs)
+        self.commission_rate = to_decimal(self.commission_rate)
+        self.slippage_value = to_decimal(self.slippage_value)
+        self.min_commission = to_decimal(self.min_commission)
+        
         if self.mode == MatchingMode.L2 and self.l2_level is None:
             raise ValueError("l2_level is required when mode is L2")
         if self.commission_rate < 0:
@@ -117,14 +126,14 @@ class MatchingConfig:
             raise ValueError("min_commission must be non-negative")
     
     def to_dict(self) -> dict[str, Any]:
-        """Convert to dictionary for serialization."""
+        """Convert to dictionary for serialization (uses string for Decimal precision)."""
         return {
             "mode": self.mode.value,
             "l2_level": self.l2_level.value if self.l2_level else None,
-            "commission_rate": self.commission_rate,
+            "commission_rate": str(self.commission_rate),
             "slippage_model": self.slippage_model.value,
-            "slippage_value": self.slippage_value,
-            "min_commission": self.min_commission,
+            "slippage_value": str(self.slippage_value),
+            "min_commission": str(self.min_commission),
             "enable_partial_fill": self.enable_partial_fill,
         }
     
@@ -134,10 +143,10 @@ class MatchingConfig:
         return cls(
             mode=MatchingMode(data["mode"]),
             l2_level=L2SimulationLevel(data["l2_level"]) if data.get("l2_level") else None,
-            commission_rate=data.get("commission_rate", 0.0003),
+            commission_rate=to_decimal(data.get("commission_rate", "0.0003")),
             slippage_model=SlippageModel(data.get("slippage_model", "fixed")),
-            slippage_value=data.get("slippage_value", 0.0001),
-            min_commission=data.get("min_commission", 0.0),
+            slippage_value=to_decimal(data.get("slippage_value", "0.0001")),
+            min_commission=to_decimal(data.get("min_commission", "0")),
             enable_partial_fill=data.get("enable_partial_fill", True),
         )
 
@@ -273,64 +282,85 @@ class MatchingQualityMetrics:
         partially_filled_orders: Number of partially filled orders
         cancelled_orders: Number of cancelled orders
         rejected_orders: Number of rejected orders
-        fill_rate: Ratio of filled volume to total order volume
-        avg_slippage: Average slippage across all trades
-        max_slippage: Maximum slippage observed
-        slippage_distribution: Slippage distribution by percentile
+        fill_rate: Ratio of filled volume to total order volume (Decimal)
+        avg_slippage: Average slippage across all trades (Decimal)
+        max_slippage: Maximum slippage observed (Decimal)
+        slippage_distribution: Slippage distribution by percentile (Decimal values)
         avg_queue_wait_time: Average queue wait time (L2 mode only)
         max_queue_wait_time: Maximum queue wait time (L2 mode only)
-        total_commission: Total commission paid
-        total_turnover: Total trading turnover
+        total_commission: Total commission paid (Decimal)
+        total_turnover: Total trading turnover (Decimal)
+    
+    Note:
+        TD-001 Resolution: fill_rate/avg_slippage/max_slippage/total_commission/total_turnover
+        use Decimal to avoid IEEE 754 floating-point precision errors in financial calculations.
     """
     total_orders: int = 0
     filled_orders: int = 0
     partially_filled_orders: int = 0
     cancelled_orders: int = 0
     rejected_orders: int = 0
-    fill_rate: float = 0.0
-    avg_slippage: float = 0.0
-    max_slippage: float = 0.0
-    slippage_distribution: dict[str, float] = field(default_factory=dict)
+    fill_rate: Decimal = field(default_factory=lambda: Decimal("0"))
+    avg_slippage: Decimal = field(default_factory=lambda: Decimal("0"))
+    max_slippage: Decimal = field(default_factory=lambda: Decimal("0"))
+    slippage_distribution: dict[str, Decimal] = field(default_factory=dict)
     avg_queue_wait_time: Optional[float] = None
     max_queue_wait_time: Optional[float] = None
-    total_commission: float = 0.0
-    total_turnover: float = 0.0
+    total_commission: Decimal = field(default_factory=lambda: Decimal("0"))
+    total_turnover: Decimal = field(default_factory=lambda: Decimal("0"))
+    
+    def __post_init__(self) -> None:
+        """Convert fields to Decimal if needed (for backward compatibility)."""
+        self.fill_rate = to_decimal(self.fill_rate)
+        self.avg_slippage = to_decimal(self.avg_slippage)
+        self.max_slippage = to_decimal(self.max_slippage)
+        self.total_commission = to_decimal(self.total_commission)
+        self.total_turnover = to_decimal(self.total_turnover)
+        # Convert slippage_distribution values to Decimal
+        if self.slippage_distribution:
+            self.slippage_distribution = {
+                k: to_decimal(v) for k, v in self.slippage_distribution.items()
+            }
     
     def to_dict(self) -> dict[str, Any]:
-        """Convert to dictionary for serialization."""
+        """Convert to dictionary for serialization (uses string for Decimal precision)."""
         return {
             "total_orders": self.total_orders,
             "filled_orders": self.filled_orders,
             "partially_filled_orders": self.partially_filled_orders,
             "cancelled_orders": self.cancelled_orders,
             "rejected_orders": self.rejected_orders,
-            "fill_rate": self.fill_rate,
-            "avg_slippage": self.avg_slippage,
-            "max_slippage": self.max_slippage,
-            "slippage_distribution": self.slippage_distribution,
+            "fill_rate": str(self.fill_rate),
+            "avg_slippage": str(self.avg_slippage),
+            "max_slippage": str(self.max_slippage),
+            "slippage_distribution": {k: str(v) for k, v in self.slippage_distribution.items()},
             "avg_queue_wait_time": self.avg_queue_wait_time,
             "max_queue_wait_time": self.max_queue_wait_time,
-            "total_commission": self.total_commission,
-            "total_turnover": self.total_turnover,
+            "total_commission": str(self.total_commission),
+            "total_turnover": str(self.total_turnover),
         }
     
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> MatchingQualityMetrics:
         """Create MatchingQualityMetrics from dictionary."""
+        slippage_dist = data.get("slippage_distribution", {})
+        if slippage_dist:
+            slippage_dist = {k: to_decimal(v) for k, v in slippage_dist.items()}
+        
         return cls(
             total_orders=data.get("total_orders", 0),
             filled_orders=data.get("filled_orders", 0),
             partially_filled_orders=data.get("partially_filled_orders", 0),
             cancelled_orders=data.get("cancelled_orders", 0),
             rejected_orders=data.get("rejected_orders", 0),
-            fill_rate=data.get("fill_rate", 0.0),
-            avg_slippage=data.get("avg_slippage", 0.0),
-            max_slippage=data.get("max_slippage", 0.0),
-            slippage_distribution=data.get("slippage_distribution", {}),
+            fill_rate=to_decimal(data.get("fill_rate", "0")),
+            avg_slippage=to_decimal(data.get("avg_slippage", "0")),
+            max_slippage=to_decimal(data.get("max_slippage", "0")),
+            slippage_distribution=slippage_dist,
             avg_queue_wait_time=data.get("avg_queue_wait_time"),
             max_queue_wait_time=data.get("max_queue_wait_time"),
-            total_commission=data.get("total_commission", 0.0),
-            total_turnover=data.get("total_turnover", 0.0),
+            total_commission=to_decimal(data.get("total_commission", "0")),
+            total_turnover=to_decimal(data.get("total_turnover", "0")),
         )
 
 
@@ -761,7 +791,7 @@ class MatchingEngine(IMatchingEngine):
         self, order: OrderData, tick: TickData, base_price: Decimal
     ) -> Decimal:
         """Calculate slippage based on configured model (returns Decimal)."""
-        slippage_value = to_decimal(self._config.slippage_value)
+        slippage_value = self._config.slippage_value
         
         if self._config.slippage_model == SlippageModel.FIXED:
             return slippage_value * base_price
@@ -782,30 +812,27 @@ class MatchingEngine(IMatchingEngine):
     
     def _calculate_commission(self, turnover: Decimal) -> Decimal:
         """Calculate commission for a trade (returns Decimal)."""
-        commission_rate = to_decimal(self._config.commission_rate)
-        min_commission = to_decimal(self._config.min_commission)
-        commission = turnover * commission_rate
-        return max(commission, min_commission)
+        commission = turnover * self._config.commission_rate
+        return max(commission, self._config.min_commission)
     
     def _update_metrics_for_trade(self, trade: TradeRecord) -> None:
-        """Update metrics after a trade (handles Decimal values)."""
-        # Convert Decimal to float for metrics (metrics use float for simplicity)
-        self._metrics.total_turnover += float(trade.turnover)
-        self._metrics.total_commission += float(trade.commission)
+        """Update metrics after a trade (uses Decimal arithmetic)."""
+        # Update turnover and commission (Decimal arithmetic)
+        self._metrics.total_turnover += trade.turnover
+        self._metrics.total_commission += trade.commission
         
-        # Update slippage metrics
-        trade_slippage = float(trade.slippage)
-        if self._metrics.max_slippage < trade_slippage:
-            self._metrics.max_slippage = trade_slippage
+        # Update slippage metrics (Decimal arithmetic)
+        if self._metrics.max_slippage < trade.slippage:
+            self._metrics.max_slippage = trade.slippage
         
-        # Update average slippage
+        # Update average slippage (Decimal arithmetic)
         n = len(self._trades)
         if n > 0:
             self._metrics.avg_slippage = (
-                (self._metrics.avg_slippage * (n - 1) + trade_slippage) / n
+                (self._metrics.avg_slippage * Decimal(str(n - 1)) + trade.slippage) / Decimal(str(n))
             )
         
-        # Update queue wait time metrics (L2 only)
+        # Update queue wait time metrics (L2 only) - these remain float as they are time-based
         if trade.queue_wait_time is not None:
             if self._metrics.max_queue_wait_time is None:
                 self._metrics.max_queue_wait_time = trade.queue_wait_time
@@ -821,25 +848,25 @@ class MatchingEngine(IMatchingEngine):
                     (self._metrics.avg_queue_wait_time * (n - 1) + trade.queue_wait_time) / n
                 )
         
-        # Update fill rate
-        total_volume = sum(float(t.volume) for t in self._trades)
+        # Update fill rate (Decimal arithmetic)
+        total_volume = sum(t.volume for t in self._trades)
         total_order_volume = total_volume + sum(
-            float(o.remaining) for o in self._pending_orders.values()
+            o.remaining for o in self._pending_orders.values()
         )
         if total_order_volume > 0:
             self._metrics.fill_rate = total_volume / total_order_volume
     
     def get_quality_metrics(self) -> MatchingQualityMetrics:
         """Get matching quality metrics."""
-        # Calculate slippage distribution (convert Decimal to float for metrics)
+        # Calculate slippage distribution (using Decimal)
         if self._trades:
-            slippages = sorted([float(t.slippage) for t in self._trades])
+            slippages = sorted([t.slippage for t in self._trades])
             n = len(slippages)
             self._metrics.slippage_distribution = {
-                "p25": slippages[int(n * 0.25)] if n > 0 else 0.0,
-                "p50": slippages[int(n * 0.50)] if n > 0 else 0.0,
-                "p75": slippages[int(n * 0.75)] if n > 0 else 0.0,
-                "p95": slippages[int(n * 0.95)] if n > 0 else 0.0,
+                "p25": slippages[int(n * 0.25)] if n > 0 else Decimal("0"),
+                "p50": slippages[int(n * 0.50)] if n > 0 else Decimal("0"),
+                "p75": slippages[int(n * 0.75)] if n > 0 else Decimal("0"),
+                "p95": slippages[int(n * 0.95)] if n > 0 else Decimal("0"),
             }
         
         return self._metrics

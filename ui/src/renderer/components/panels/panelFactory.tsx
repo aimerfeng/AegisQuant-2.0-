@@ -7,27 +7,84 @@
 import React from 'react';
 import { PanelType, PanelComponentProps, PanelRegistration } from '../../types/layout';
 import PlaceholderPanel from './PlaceholderPanel';
+import KLineChartWithTools from '../KLineChart/KLineChartWithTools';
+import { darkTheme, CandlestickData, TradeMarker, Indicator, Drawing } from '../KLineChart/types';
+import OrderBook from '../OrderBook';
+import { OrderBookData, OrderBookDisplayMode, darkOrderBookTheme } from '../OrderBook/types';
+import { PlaybackBar, ManualTrade } from '../ControlPanel';
+import StrategyLab from '../StrategyLab';
+import DataCenter from '../DataCenter';
+import Reports from '../Reports';
+import { BacktestReport } from '../Reports/types';
 
 /**
- * K-Line Chart Panel (placeholder)
+ * K-Line Chart Panel - Full-featured implementation with drawing tools and indicators
  */
-const KLineChartPanel: React.FC<PanelComponentProps> = (props) => (
-  <PlaceholderPanel panelName="K-Line Chart" icon="📈" {...props} />
-);
+const KLineChartPanel: React.FC<PanelComponentProps> = (props) => {
+  // Extract data from component state if available
+  const componentState = props.componentState || {};
+  const data = (componentState.data as CandlestickData[]) || [];
+  const tradeMarkers = (componentState.tradeMarkers as TradeMarker[]) || [];
+  const indicators = (componentState.indicators as Indicator[]) || [];
+  const drawings = (componentState.drawings as Drawing[]) || [];
+  const symbol = (componentState.symbol as string) || '';
+  const interval = (componentState.interval as string) || '';
+
+  return (
+    <KLineChartWithTools
+      data={data}
+      tradeMarkers={tradeMarkers}
+      indicators={indicators}
+      drawings={drawings}
+      symbol={symbol}
+      interval={interval}
+      theme={darkTheme}
+      autoSize={true}
+      showDrawingTools={true}
+      showIndicatorPanel={true}
+    />
+  );
+};
 
 /**
- * Order Book Panel (placeholder)
+ * Order Book Panel - Full-featured implementation with depth visualization
  */
-const OrderBookPanel: React.FC<PanelComponentProps> = (props) => (
-  <PlaceholderPanel panelName="Order Book" icon="📊" {...props} />
-);
+const OrderBookPanel: React.FC<PanelComponentProps> = (props) => {
+  // Extract data from component state if available
+  const componentState = props.componentState || {};
+  const data = componentState.data as OrderBookData | undefined;
+  const displayMode = (componentState.displayMode as OrderBookDisplayMode) || OrderBookDisplayMode.VERTICAL;
+  const levels = (componentState.levels as number) || 10;
+  const precision = (componentState.precision as number) || 2;
+  const volumePrecision = (componentState.volumePrecision as number) || 4;
+
+  return (
+    <OrderBook
+      data={data}
+      displayMode={displayMode}
+      levels={levels}
+      precision={precision}
+      volumePrecision={volumePrecision}
+      theme={darkOrderBookTheme}
+      autoSize={true}
+      animateUpdates={true}
+    />
+  );
+};
 
 /**
- * Strategy Lab Panel (placeholder)
+ * Strategy Lab Panel - Full-featured implementation with code editor, params, and hot reload
  */
-const StrategyLabPanel: React.FC<PanelComponentProps> = (props) => (
-  <PlaceholderPanel panelName="Strategy Lab" icon="🔬" {...props} />
-);
+const StrategyLabPanel: React.FC<PanelComponentProps> = (props) => {
+  const componentState = props.componentState || {};
+  const initialStrategyId = componentState.strategyId as string | undefined;
+
+  return (
+    <StrategyLab
+      initialStrategyId={initialStrategyId}
+    />
+  );
+};
 
 /**
  * Log Panel (placeholder)
@@ -51,25 +108,59 @@ const TradesPanel: React.FC<PanelComponentProps> = (props) => (
 );
 
 /**
- * Control Panel (placeholder)
+ * Control Panel - Playback controls and manual trading
  */
-const ControlPanel: React.FC<PanelComponentProps> = (props) => (
-  <PlaceholderPanel panelName="Control Panel" icon="🎛️" {...props} />
-);
+const ControlPanel: React.FC<PanelComponentProps> = (props) => {
+  const componentState = props.componentState || {};
+  const symbol = (componentState.symbol as string) || 'BTC_USDT';
+  const volume = (componentState.volume as number) || 1;
+
+  return (
+    <div className="control-panel-container" style={{ 
+      display: 'flex', 
+      flexDirection: 'column', 
+      gap: '16px', 
+      padding: '16px',
+      height: '100%',
+      overflow: 'auto'
+    }}>
+      <PlaybackBar />
+      <ManualTrade config={{ symbol, volume }} />
+    </div>
+  );
+};
 
 /**
- * Data Center Panel (placeholder)
+ * Data Center Panel - Full-featured implementation with file import, cleaning, and provider config
  */
-const DataCenterPanel: React.FC<PanelComponentProps> = (props) => (
-  <PlaceholderPanel panelName="Data Center" icon="🗄️" {...props} />
-);
+const DataCenterPanel: React.FC<PanelComponentProps> = (props) => {
+  const componentState = props.componentState || {};
+  const initialTab = (componentState.initialTab as 'import' | 'cleaning' | 'providers') || 'import';
+
+  return (
+    <DataCenter
+      initialTab={initialTab}
+    />
+  );
+};
 
 /**
- * Reports Panel (placeholder)
+ * Reports Panel - Full-featured implementation with metrics cards and equity curve
  */
-const ReportsPanel: React.FC<PanelComponentProps> = (props) => (
-  <PlaceholderPanel panelName="Reports" icon="📑" {...props} />
-);
+const ReportsPanel: React.FC<PanelComponentProps> = (props) => {
+  const componentState = props.componentState || {};
+  const report = componentState.report as BacktestReport | undefined;
+  const isLoading = (componentState.isLoading as boolean) || false;
+  const error = componentState.error as string | undefined;
+
+  return (
+    <Reports
+      report={report}
+      isLoading={isLoading}
+      error={error}
+    />
+  );
+};
 
 /**
  * Panel component map

@@ -1,0 +1,270 @@
+/**
+ * Trade Markers Styles
+ */
+
+.trade-markers-container {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  z-index: 100;
+}
+
+/* Toggle button */
+.markers-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background-color: rgba(30, 34, 45, 0.95);
+  border: 1px solid var(--border-color, #2b2f3a);
+  border-radius: 6px;
+  padding: 4px 8px;
+}
+
+.toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--text-secondary, #787b86);
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.toggle-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary, #d1d4dc);
+}
+
+.toggle-btn.active {
+  color: var(--text-primary, #d1d4dc);
+}
+
+.toggle-label {
+  font-size: 11px;
+}
+
+.marker-count {
+  font-size: 10px;
+  padding: 2px 6px;
+  background-color: rgba(33, 150, 243, 0.2);
+  color: #2196F3;
+  border-radius: 10px;
+}
+
+/* Trade statistics */
+.trade-stats {
+  display: flex;
+  gap: 12px;
+  margin-top: 6px;
+  padding: 6px 10px;
+  background-color: rgba(30, 34, 45, 0.95);
+  border: 1px solid var(--border-color, #2b2f3a);
+  border-radius: 6px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-label {
+  font-size: 9px;
+  color: var(--text-secondary, #787b86);
+  text-transform: uppercase;
+}
+
+.stat-value {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-primary, #d1d4dc);
+  font-family: monospace;
+}
+
+.stat-value.profit {
+  color: #26a69a;
+}
+
+.stat-value.loss {
+  color: #ef5350;
+}
+
+/* Trade tooltip */
+.trade-tooltip {
+  position: fixed;
+  z-index: 1000;
+  background-color: rgba(30, 34, 45, 0.98);
+  border: 1px solid var(--border-color, #2b2f3a);
+  border-radius: 8px;
+  padding: 0;
+  min-width: 200px;
+  max-width: 280px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.tooltip-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 12px;
+  background-color: rgba(0, 0, 0, 0.3);
+  border-bottom: 1px solid var(--border-color, #2b2f3a);
+}
+
+.direction-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.direction-badge.long {
+  background-color: rgba(38, 166, 154, 0.2);
+  color: #26a69a;
+}
+
+.direction-badge.short {
+  background-color: rgba(239, 83, 80, 0.2);
+  color: #ef5350;
+}
+
+.action-badge {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--text-secondary, #787b86);
+}
+
+.action-badge.open {
+  background-color: rgba(33, 150, 243, 0.2);
+  color: #2196F3;
+}
+
+.action-badge.close {
+  background-color: rgba(156, 39, 176, 0.2);
+  color: #9C27B0;
+}
+
+.manual-badge {
+  font-size: 9px;
+  padding: 2px 4px;
+  background-color: rgba(255, 152, 0, 0.2);
+  color: #ff9800;
+  border-radius: 3px;
+  margin-left: auto;
+}
+
+.tooltip-body {
+  padding: 10px 12px;
+}
+
+.tooltip-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.tooltip-row:last-child {
+  margin-bottom: 0;
+}
+
+.tooltip-row .label {
+  font-size: 11px;
+  color: var(--text-secondary, #787b86);
+}
+
+.tooltip-row .value {
+  font-size: 12px;
+  color: var(--text-primary, #d1d4dc);
+  font-family: monospace;
+}
+
+.tooltip-row.pnl-row .value {
+  font-weight: 600;
+}
+
+.tooltip-row .value.profit {
+  color: #26a69a;
+}
+
+.tooltip-row .value.loss {
+  color: #ef5350;
+}
+
+.tooltip-row .value .percent {
+  margin-left: 4px;
+  font-size: 10px;
+  opacity: 0.8;
+}
+
+.tooltip-row.time-row {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-color, #2b2f3a);
+}
+
+.tooltip-footer {
+  padding: 6px 12px;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-top: 1px solid var(--border-color, #2b2f3a);
+}
+
+.trade-id {
+  font-size: 9px;
+  color: var(--text-secondary, #787b86);
+  font-family: monospace;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .trade-markers-container {
+    bottom: 4px;
+    left: 4px;
+  }
+
+  .markers-toggle {
+    padding: 2px 6px;
+  }
+
+  .toggle-label {
+    display: none;
+  }
+
+  .trade-stats {
+    gap: 8px;
+    padding: 4px 8px;
+  }
+
+  .stat-label {
+    font-size: 8px;
+  }
+
+  .stat-value {
+    font-size: 10px;
+  }
+
+  .trade-tooltip {
+    min-width: 180px;
+  }
+
+  .tooltip-header {
+    padding: 8px 10px;
+  }
+
+  .tooltip-body {
+    padding: 8px 10px;
+  }
+
+  .tooltip-row {
+    font-size: 10px;
+  }
+}

@@ -527,3 +527,390 @@ class TestMatchingEngineBasicFunctionality:
         assert metrics.filled_orders == 5
         assert metrics.total_turnover > 0
         assert metrics.total_commission > 0
+
+
+class TestDecimalPrecision:
+    """
+    Tests for Decimal precision in financial calculations.
+    
+    These tests verify that the matching engine uses Decimal arithmetic
+    to avoid floating-point precision errors that could accumulate
+    during long-term backtests.
+    
+    **Validates: Requirements 7.7**
+    """
+    
+    def test_no_floating_point_accumulation_error(self) -> None:
+        """
+        Test that repeated small trades don't accumulate floating-point errors.
+        
+        This test simulates a scenario where many small trades are executed,
+        which would cause precision errors with float arithmetic but not with Decimal.
+        
+        Example: 0.1 + 0.2 != 0.3 in float, but Decimal("0.1") + Decimal("0.2") == Decimal("0.3")
+        """
+        config = MatchingConfig(
+            mode=MatchingMode.L1,
+            commission_rate=Decimal("0.0001"),  # 0.01% commission
+            slippage_value=Decimal("0"),  # No slippage for precision test
+            min_commission=Decimal("0"),
+        )
+        engine = MatchingEngine(config)
+        
+        # Create tick with precise prices
+        tick = TickData(
+            symbol="BTC_USDT",
+            exchange="binance",
+            datetime=datetime.now(),
+            last_price=Decimal("0.1"),  # Small price to test precision
+            volume=Decimal("1000000"),
+            bid_price_1=Decimal("0.1"),
+            bid_volume_1=Decimal("1000000"),
+            ask_price_1=Decimal("0.1"),
+            ask_volume_1=Decimal("1000000"),
+        )
+        
+        # Execute 1000 trades with volume 0.1 each
+        # With float: 0.1 * 1000 might not equal exactly 100.0
+        # With Decimal: Decimal("0.1") * 1000 == Decimal("100.0") exactly
+        num_trades = 1000
+        trade_volume = Decimal("0.1")
+        
+        for i in range(num_trades):
+            order = OrderData(
+                order_id=f"order_{i}",
+                symbol="BTC_USDT",
+                exchange="binance",
+                direction="LONG",
+                offset="OPEN",
+                price=Decimal("0"),  # Market order
+                volume=trade_volume,
+                traded=Decimal("0"),
+                status="PENDING",
+                is_manual=False,
+                create_time=datetime.now(),
+            )
+            engine.submit_order(order)
+            engine.process_tick(tick)
+        
+        # Verify total volume is exactly 100.0 (not 99.99999... or 100.00001...)
+        trades = engine.get_trades()
+        total_volume = sum(t.volume for t in trades)
+        expected_volume = trade_volume * num_trades
+        
+        assert total_volume == expected_volume, \
+            f"Total volume {total_volume} != expected {expected_volume} (precision error)"
+        
+        # Verify total turnover is exactly price * total_volume
+        total_turnover = sum(t.turnover for t in trades)
+        expected_turnover = Decimal("0.1") * expected_volume
+        
+        assert total_turnover == expected_turnover, \
+            f"Total turnover {total_turnover} != expected {expected_turnover} (precision error)"
+    
+    def test_commission_precision_over_many_trades(self) -> None:
+        """
+        Test that commission calculations maintain precision over many trades.
+        
+        Commission = turnover * rate, and small rates like 0.0001 can cause
+        precision issues with float arithmetic.
+        """
+        # Use a commission rate that causes float precision issues
+        # 0.0001 * 10000 should equal exactly 1.0
+        config = MatchingConfig(
+            mode=MatchingMode.L1,
+            commission_rate=Decimal("0.0001"),
+            slippage_value=Decimal("0"),
+            min_commission=Decimal("0"),
+        )
+        engine = MatchingEngine(config)
+        
+        tick = TickData(
+            symbol="BTC_USDT",
+            exchange="binance",
+            datetime=datetime.now(),
+            last_price=Decimal("1"),
+            volume=Decimal("1000000"),
+            bid_price_1=Decimal("1"),
+            bid_volume_1=Decimal("1000000"),
+            ask_price_1=Decimal("1"),
+            ask_volume_1=Decimal("1000000"),
+        )
+        
+        # Execute 100 trades with turnover 100 each
+        # Total turnover = 10000, commission = 10000 * 0.0001 = 1.0 exactly
+        num_trades = 100
+        trade_volume = Decimal("100")
+        
+        for i in range(num_trades):
+            order = OrderData(
+                order_id=f"order_{i}",
+                symbol="BTC_USDT",
+                exchange="binance",
+                direction="LONG",
+                offset="OPEN",
+                price=Decimal("0"),
+                volume=trade_volume,
+                traded=Decimal("0"),
+                status="PENDING",
+                is_manual=False,
+                create_time=datetime.now(),
+            )
+            engine.submit_order(order)
+            engine.process_tick(tick)
+        
+        # Verify total commission is exactly 1.0
+        trades = engine.get_trades()
+        total_commission = sum(t.commission for t in trades)
+        expected_commission = Decimal("10000") * Decimal("0.0001")
+        
+        assert total_commission == expected_commission, \
+            f"Total commission {total_commission} != expected {expected_commission}"
+        
+        # Also verify via metrics
+        metrics = engine.get_quality_metrics()
+        assert metrics.total_commission == expected_commission, \
+            f"Metrics commission {metrics.total_commission} != expected {expected_commission}"
+    
+    def test_slippage_precision(self) -> None:
+        """
+        Test that slippage calculations maintain Decimal precision.
+        """
+        config = MatchingConfig(
+            mode=MatchingMode.L1,
+            commission_rate=Decimal("0"),
+            slippage_model=SlippageModel.FIXED,
+            slippage_value=Decimal("0.00001"),  # Very small slippage
+            min_commission=Decimal("0"),
+        )
+        engine = MatchingEngine(config)
+        
+        # Price where small slippage matters
+        tick = TickData(
+            symbol="BTC_USDT",
+            exchange="binance",
+            datetime=datetime.now(),
+            last_price=Decimal("50000"),
+            volume=Decimal("100"),
+            bid_price_1=Decimal("50000"),
+            bid_volume_1=Decimal("100"),
+            ask_price_1=Decimal("50000"),
+            ask_volume_1=Decimal("100"),
+        )
+        
+        order = OrderData(
+            order_id="order_001",
+            symbol="BTC_USDT",
+            exchange="binance",
+            direction="LONG",
+            offset="OPEN",
+            price=Decimal("0"),
+            volume=Decimal("1"),
+            traded=Decimal("0"),
+            status="PENDING",
+            is_manual=False,
+            create_time=datetime.now(),
+        )
+        
+        engine.submit_order(order)
+        trades = engine.process_tick(tick)
+        
+        assert len(trades) == 1
+        trade = trades[0]
+        
+        # Slippage should be exactly 50000 * 0.00001 = 0.5
+        expected_slippage = Decimal("50000") * Decimal("0.00001")
+        assert trade.slippage == expected_slippage, \
+            f"Slippage {trade.slippage} != expected {expected_slippage}"
+        
+        # Final price should be ask + slippage = 50000 + 0.5 = 50000.5
+        expected_price = Decimal("50000") + expected_slippage
+        assert trade.price == expected_price, \
+            f"Price {trade.price} != expected {expected_price}"
+    
+    def test_metrics_decimal_precision(self) -> None:
+        """
+        Test that MatchingQualityMetrics maintains Decimal precision.
+        """
+        config = MatchingConfig(
+            mode=MatchingMode.L1,
+            commission_rate=Decimal("0.0003"),
+            slippage_value=Decimal("0.0001"),
+        )
+        engine = MatchingEngine(config)
+        
+        tick = TickData(
+            symbol="BTC_USDT",
+            exchange="binance",
+            datetime=datetime.now(),
+            last_price=Decimal("50000"),
+            volume=Decimal("100"),
+            bid_price_1=Decimal("50000"),
+            bid_volume_1=Decimal("100"),
+            ask_price_1=Decimal("50000"),
+            ask_volume_1=Decimal("100"),
+        )
+        
+        # Execute multiple trades
+        for i in range(10):
+            order = OrderData(
+                order_id=f"order_{i}",
+                symbol="BTC_USDT",
+                exchange="binance",
+                direction="LONG",
+                offset="OPEN",
+                price=Decimal("0"),
+                volume=Decimal("1"),
+                traded=Decimal("0"),
+                status="PENDING",
+                is_manual=False,
+                create_time=datetime.now(),
+            )
+            engine.submit_order(order)
+            engine.process_tick(tick)
+        
+        metrics = engine.get_quality_metrics()
+        
+        # Verify metrics are Decimal types
+        assert isinstance(metrics.total_turnover, Decimal), \
+            f"total_turnover should be Decimal, got {type(metrics.total_turnover)}"
+        assert isinstance(metrics.total_commission, Decimal), \
+            f"total_commission should be Decimal, got {type(metrics.total_commission)}"
+        assert isinstance(metrics.avg_slippage, Decimal), \
+            f"avg_slippage should be Decimal, got {type(metrics.avg_slippage)}"
+        assert isinstance(metrics.max_slippage, Decimal), \
+            f"max_slippage should be Decimal, got {type(metrics.max_slippage)}"
+        assert isinstance(metrics.fill_rate, Decimal), \
+            f"fill_rate should be Decimal, got {type(metrics.fill_rate)}"
+    
+    def test_config_decimal_serialization_roundtrip(self) -> None:
+        """
+        Test that MatchingConfig Decimal values survive serialization round-trip.
+        """
+        original_config = MatchingConfig(
+            mode=MatchingMode.L1,
+            commission_rate=Decimal("0.00033333"),  # Repeating decimal
+            slippage_value=Decimal("0.00012345"),
+            min_commission=Decimal("0.01"),
+        )
+        
+        # Serialize and deserialize
+        config_dict = original_config.to_dict()
+        restored_config = MatchingConfig.from_dict(config_dict)
+        
+        # Verify values are preserved exactly
+        assert restored_config.commission_rate == original_config.commission_rate, \
+            f"commission_rate not preserved: {restored_config.commission_rate} != {original_config.commission_rate}"
+        assert restored_config.slippage_value == original_config.slippage_value, \
+            f"slippage_value not preserved: {restored_config.slippage_value} != {original_config.slippage_value}"
+        assert restored_config.min_commission == original_config.min_commission, \
+            f"min_commission not preserved: {restored_config.min_commission} != {original_config.min_commission}"
+    
+    def test_trade_record_decimal_serialization_roundtrip(self) -> None:
+        """
+        Test that TradeRecord Decimal values survive serialization round-trip.
+        """
+        original_trade = TradeRecord(
+            trade_id="test_001",
+            order_id="order_001",
+            symbol="BTC_USDT",
+            exchange="binance",
+            direction="LONG",
+            offset="OPEN",
+            price=Decimal("50000.12345678"),
+            volume=Decimal("0.00012345"),
+            turnover=Decimal("6.17287654321"),
+            commission=Decimal("0.00185186"),
+            slippage=Decimal("0.00005"),
+            matching_mode=MatchingMode.L1,
+            l2_level=None,
+            queue_wait_time=None,
+            timestamp=datetime.now(),
+            is_manual=False,
+        )
+        
+        # Serialize and deserialize
+        trade_dict = original_trade.to_dict()
+        restored_trade = TradeRecord.from_dict(trade_dict)
+        
+        # Verify values are preserved exactly
+        assert restored_trade.price == original_trade.price, \
+            f"price not preserved: {restored_trade.price} != {original_trade.price}"
+        assert restored_trade.volume == original_trade.volume, \
+            f"volume not preserved: {restored_trade.volume} != {original_trade.volume}"
+        assert restored_trade.turnover == original_trade.turnover, \
+            f"turnover not preserved: {restored_trade.turnover} != {original_trade.turnover}"
+        assert restored_trade.commission == original_trade.commission, \
+            f"commission not preserved: {restored_trade.commission} != {original_trade.commission}"
+        assert restored_trade.slippage == original_trade.slippage, \
+            f"slippage not preserved: {restored_trade.slippage} != {original_trade.slippage}"
+    
+    @given(
+        num_trades=st.integers(min_value=100, max_value=500),
+        price=st.decimals(min_value=Decimal("0.01"), max_value=Decimal("100000"), places=8),
+        volume=st.decimals(min_value=Decimal("0.00001"), max_value=Decimal("100"), places=8),
+    )
+    @settings(max_examples=50, deadline=10000)
+    def test_long_backtest_no_precision_drift(
+        self, num_trades: int, price: Decimal, volume: Decimal
+    ) -> None:
+        """
+        Property: For any number of trades with any valid price/volume,
+        the total turnover should equal sum of individual turnovers exactly.
+        
+        This property would fail with float arithmetic due to precision drift.
+        
+        Feature: titan-quant, Property: Decimal Precision No Drift
+        **Validates: Requirements 7.7**
+        """
+        config = MatchingConfig(
+            mode=MatchingMode.L1,
+            commission_rate=Decimal("0"),
+            slippage_value=Decimal("0"),
+            min_commission=Decimal("0"),
+        )
+        engine = MatchingEngine(config)
+        
+        tick = TickData(
+            symbol="BTC_USDT",
+            exchange="binance",
+            datetime=datetime.now(),
+            last_price=price,
+            volume=Decimal("1000000"),
+            bid_price_1=price,
+            bid_volume_1=Decimal("1000000"),
+            ask_price_1=price,
+            ask_volume_1=Decimal("1000000"),
+        )
+        
+        for i in range(num_trades):
+            order = OrderData(
+                order_id=f"order_{i}",
+                symbol="BTC_USDT",
+                exchange="binance",
+                direction="LONG",
+                offset="OPEN",
+                price=Decimal("0"),
+                volume=volume,
+                traded=Decimal("0"),
+                status="PENDING",
+                is_manual=False,
+                create_time=datetime.now(),
+            )
+            engine.submit_order(order)
+            engine.process_tick(tick)
+        
+        trades = engine.get_trades()
+        
+        # Calculate expected total turnover
+        expected_total_turnover = price * volume * num_trades
+        actual_total_turnover = sum(t.turnover for t in trades)
+        
+        # With Decimal, these should be exactly equal
+        assert actual_total_turnover == expected_total_turnover, \
+            f"Precision drift detected: {actual_total_turnover} != {expected_total_turnover}"
+        
+        # Also verify via metrics
+        metrics = engine.get_quality_metrics()
+        assert metrics.total_turnover == expected_total_turnover, \
+            f"Metrics precision drift: {metrics.total_turnover} != {expected_total_turnover}"

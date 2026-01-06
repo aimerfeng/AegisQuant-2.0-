@@ -1,0 +1,197 @@
+/**
+ * Playback Bar Styles
+ * 
+ * Styles for the playback control bar component.
+ */
+
+.playback-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: var(--color-bg-tertiary);
+  border-radius: var(--radius-sm);
+  min-height: 44px;
+}
+
+/* Control Buttons Group */
+.playback-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.playback-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: var(--radius-sm);
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  transition: all var(--transition-fast);
+}
+
+.playback-btn:hover:not(:disabled) {
+  background-color: var(--color-bg-hover);
+  border-color: var(--color-border-light);
+}
+
+.playback-btn:active:not(:disabled) {
+  background-color: var(--color-bg-active);
+}
+
+.playback-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.playback-btn-primary {
+  width: 40px;
+  height: 40px;
+  background-color: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+.playback-btn-primary:hover:not(:disabled) {
+  background-color: var(--color-accent-hover);
+  border-color: var(--color-accent-hover);
+}
+
+.playback-btn-primary.playing {
+  background-color: var(--color-warning);
+  border-color: var(--color-warning);
+}
+
+.playback-btn-stop:hover:not(:disabled) {
+  background-color: var(--color-error);
+  border-color: var(--color-error);
+}
+
+.playback-icon {
+  font-size: var(--font-size-md);
+  line-height: 1;
+}
+
+/* Speed Control */
+.playback-speed {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.speed-label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.speed-buttons {
+  display: flex;
+  gap: 2px;
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--radius-sm);
+  padding: 2px;
+}
+
+.speed-btn {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: var(--font-size-xs);
+  background-color: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+  min-width: 36px;
+  transition: all var(--transition-fast);
+}
+
+.speed-btn:hover:not(:disabled) {
+  background-color: var(--color-bg-hover);
+  color: var(--color-text-primary);
+}
+
+.speed-btn.active {
+  background-color: var(--color-accent);
+  color: white;
+}
+
+.speed-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Progress Display */
+.playback-progress {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  min-width: 150px;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 6px;
+  background-color: var(--color-bg-secondary);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background-color: var(--color-accent);
+  border-radius: 3px;
+  transition: width var(--transition-fast);
+}
+
+.progress-time {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  font-family: monospace;
+  min-width: 70px;
+  text-align: right;
+}
+
+/* Status Indicator */
+.playback-status {
+  display: flex;
+  align-items: center;
+}
+
+.status-indicator {
+  font-size: var(--font-size-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.status-indicator.playing {
+  background-color: rgba(76, 175, 80, 0.2);
+  color: var(--color-success);
+}
+
+.status-indicator.paused {
+  background-color: rgba(255, 152, 0, 0.2);
+  color: var(--color-warning);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .playback-bar {
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+  }
+
+  .playback-progress {
+    order: 3;
+    width: 100%;
+    min-width: auto;
+  }
+
+  .speed-label {
+    display: none;
+  }
+}

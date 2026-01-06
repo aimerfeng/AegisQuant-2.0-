@@ -7,6 +7,371 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [Task 39] 状态管理 - 2026-01-06
+
+### Added
+- [Task 39.1] 实现 Zustand Store
+  - 创建 ui/src/renderer/stores/backtestStore.ts
+    - 回测生命周期管理 (IDLE → LOADING → RUNNING → PAUSED → COMPLETED)
+    - 播放控制 (play/pause/speed/progress)
+    - 实时数据更新 (tick/bar/account/positions/trades)
+    - 回测结果指标存储
+    - 满足 Requirements: 5.1, 5.2, 5.3, 5.4
+  - 创建 ui/src/renderer/stores/strategyStore.ts
+    - 策略列表管理
+    - 策略实例生命周期
+    - 参数管理
+    - 热重载状态
+    - 代码编辑器文件管理
+    - 满足 Requirements: 8.2, 8.3, 8.4, 8.5
+  - 创建 ui/src/renderer/stores/index.ts
+    - 统一导出所有 Zustand stores
+    - 导出类型定义
+  - 满足 Requirements: UI 状态管理
+
+### Fixed
+- 修复 layoutStore.ts 类型错误
+  - 修复 `substr` 弃用警告，改用 `substring`
+  - 修复 Golden-Layout header 配置类型错误
+
+### Files Changed
+- ui/src/renderer/stores/backtestStore.ts (新增)
+- ui/src/renderer/stores/strategyStore.ts (新增)
+- ui/src/renderer/stores/index.ts (新增)
+- ui/src/renderer/stores/layoutStore.ts (修复)
+- docs/commits/2026-01-06-task39-zustand-stores.md (新增)
+
+## [Task 34] 数据中心组件 - 2026-01-06
+
+### Added
+- [Task 34.1] 实现文件拖拽区
+  - 创建 ui/src/renderer/components/DataCenter/FileDropzone.tsx
+  - 实现拖拽上传功能 (drag & drop)
+  - 实现点击浏览文件功能
+  - 实现文件格式自动识别 (CSV, Excel, Parquet)
+  - 实现文件大小验证
+  - 实现文件列表显示 (名称、大小、格式、状态)
+  - 实现文件移除和清空功能
+  - 创建 FileDropzone.css 样式文件
+  - 满足 Requirements: 2.1
+
+- [Task 34.2] 实现清洗预览
+  - 创建 ui/src/renderer/components/DataCenter/CleaningPreview.tsx
+  - 实现数据质量摘要 (总行数、总列数、缺失值、异常值)
+  - 实现缺失值高亮显示 (黄色背景)
+  - 实现异常值标记 (红色背景)
+  - 实现清洗配置面板:
+    - 填充方法选择 (Forward Fill, Linear, Drop)
+    - 异常值阈值设置 (σ)
+    - 移除异常值开关
+    - 对齐时间戳开关
+  - 实现数据预览表格 (带问题标记)
+  - 实现问题列表视图 (按严重程度分类)
+  - 创建 CleaningPreview.css 样式文件
+  - 满足 Requirements: 2.2, 2.3
+
+- [Task 34.3] 实现数据源配置
+  - 创建 ui/src/renderer/components/DataCenter/ProviderConfig.tsx
+  - 实现数据源列表显示 (名称、类型、连接状态)
+  - 实现数据源添加功能 (支持 Parquet, MySQL, MongoDB, DolphinDB)
+  - 实现数据源编辑功能
+  - 实现数据源删除功能 (带确认对话框)
+  - 实现连接测试功能
+  - 实现默认数据源设置
+  - 实现类型特定的配置表单:
+    - Parquet: 路径配置
+    - MySQL/MongoDB/DolphinDB: 主机、端口、数据库、用户名、密码
+  - 创建 ProviderConfig.css 样式文件
+  - 满足 Requirements: 数据源扩展
+
+- 创建 DataCenter/index.tsx 主组件
+  - 集成 FileDropzone、CleaningPreview、ProviderConfig
+  - 实现标签页切换 (导入、清洗、数据源)
+  - 创建 DataCenter.css 样式文件
+
+- 创建 DataCenter/types.ts 类型定义
+  - DataFormat, FillMethod, DataProviderType, ImportStatus 枚举
+  - ImportedFile, DataQualityIssue, DataQualityReport 接口
+  - CleaningConfig, DataPreview, DataProviderConfig 接口
+  - detectFileFormat(), formatFileSize(), getFormatIcon() 工具函数
+
+- 更新 panelFactory.tsx 使用完整功能组件
+  - DataCenterPanel 现在使用 DataCenter 组件
+  - 支持文件导入、数据清洗、数据源配置功能
+
+- 更新 i18n 语言包添加数据中心相关翻译
+  - en.json: 添加 dataCenter 分类翻译
+  - zh_cn.json: 添加 dataCenter 分类翻译
+  - zh_tw.json: 添加 dataCenter 分类翻译
+
+### Files Changed
+- ui/src/renderer/components/DataCenter/types.ts (新增)
+- ui/src/renderer/components/DataCenter/FileDropzone.tsx (新增)
+- ui/src/renderer/components/DataCenter/FileDropzone.css (新增)
+- ui/src/renderer/components/DataCenter/CleaningPreview.tsx (新增)
+- ui/src/renderer/components/DataCenter/CleaningPreview.css (新增)
+- ui/src/renderer/components/DataCenter/ProviderConfig.tsx (新增)
+- ui/src/renderer/components/DataCenter/ProviderConfig.css (新增)
+- ui/src/renderer/components/DataCenter/index.tsx (新增)
+- ui/src/renderer/components/DataCenter/DataCenter.css (新增)
+- ui/src/renderer/components/panels/panelFactory.tsx (修改)
+- ui/src/renderer/i18n/locales/en.json (修改)
+- ui/src/renderer/i18n/locales/zh_cn.json (修改)
+- ui/src/renderer/i18n/locales/zh_tw.json (修改)
+
+## [Task 33] 策略 IDE 组件 - 2026-01-06
+
+### Added
+- [Task 33.1] 实现 Monaco Editor 集成
+  - 创建 ui/src/renderer/components/StrategyLab/CodeEditor.tsx
+  - 实现 Python 语法高亮
+  - 实现策略 API 自动补全 (on_init, on_bar, on_tick, buy, sell, etc.)
+  - 实现代码片段 (ctaTemplate, onBar, onTick)
+  - 实现保存快捷键 (Ctrl+S / Cmd+S)
+  - 实现模板插入功能
+  - 创建 CodeEditor.css 样式文件
+  - 创建 types.ts 定义所有类型
+  - 满足 Requirements: 8.1
+
+- [Task 33.2] 实现参数面板
+  - 创建 ui/src/renderer/components/StrategyLab/ParamPanel.tsx
+  - 实现动态表单生成:
+    - 滑块 (slider) - 用于有范围的数值参数
+    - 下拉选择 (dropdown) - 用于枚举类型参数
+    - 复选框 (checkbox) - 用于布尔类型参数
+    - 数字输入 (input) - 用于无范围的数值参数
+    - 文本输入 (input) - 用于字符串类型参数
+  - 实现参数类型徽章显示 (int, float, string, enum, bool)
+  - 实现参数分组功能 (基于描述前缀 [Category])
+  - 实现应用参数和重置为默认功能
+  - 实现未保存更改指示器
+  - 创建 ParamPanel.css 样式文件
+  - 满足 Requirements: 8.2
+
+- [Task 33.3] 实现热重载 UI
+  - 创建 ui/src/renderer/components/StrategyLab/HotReloadPanel.tsx
+  - 实现三种重载策略选择:
+    - RESET: 重置所有变量为初始值
+    - PRESERVE: 保留所有状态变量，仅更新方法逻辑
+    - SELECTIVE: 用户选择特定变量进行保留
+  - 实现变量选择器 (用于 SELECTIVE 模式)
+  - 实现 Reload 按钮和加载状态
+  - 实现 Rollback 回滚功能
+  - 实现重载结果显示 (成功/失败、保留/重置的变量列表)
+  - 创建 HotReloadPanel.css 样式文件
+  - 满足 Requirements: 8.3
+
+- 创建 StrategyLab/index.tsx 主组件
+  - 集成 CodeEditor、ParamPanel、HotReloadPanel
+  - 实现标签页切换 (编辑器、参数、热重载)
+  - 实现策略选择下拉框
+  - 实现代码修改状态指示
+  - 实现光标位置显示
+  - 创建 StrategyLab.css 样式文件
+
+- 更新 panelFactory.tsx 使用完整功能组件
+  - StrategyLabPanel 现在使用 StrategyLab 组件
+  - 支持代码编辑、参数配置、热重载功能
+
+- 更新 i18n 语言包添加策略实验室相关翻译
+  - en.json: 添加 strategyLab 分类翻译
+  - zh_cn.json: 添加 strategyLab 分类翻译
+  - zh_tw.json: 添加 strategyLab 分类翻译
+
+### Files Changed
+- ui/src/renderer/components/StrategyLab/types.ts (新增)
+- ui/src/renderer/components/StrategyLab/CodeEditor.tsx (新增)
+- ui/src/renderer/components/StrategyLab/CodeEditor.css (新增)
+- ui/src/renderer/components/StrategyLab/ParamPanel.tsx (新增)
+- ui/src/renderer/components/StrategyLab/ParamPanel.css (新增)
+- ui/src/renderer/components/StrategyLab/HotReloadPanel.tsx (新增)
+- ui/src/renderer/components/StrategyLab/HotReloadPanel.css (新增)
+- ui/src/renderer/components/StrategyLab/index.tsx (新增)
+- ui/src/renderer/components/StrategyLab/StrategyLab.css (新增)
+- ui/src/renderer/components/panels/panelFactory.tsx (修改)
+- ui/src/renderer/i18n/locales/en.json (修改)
+- ui/src/renderer/i18n/locales/zh_cn.json (修改)
+- ui/src/renderer/i18n/locales/zh_tw.json (修改)
+
+## [Task 32] 控制面板组件 - 2026-01-06
+
+### Added
+- [Task 32.1] 实现播放控制条
+  - 创建 ui/src/renderer/components/ControlPanel/PlaybackBar.tsx
+  - 实现暂停/播放切换按钮
+  - 实现停止按钮
+  - 实现单步调试按钮 (Step)
+  - 实现速度控制 (1x, 2x, 4x, 10x)
+  - 实现进度条显示
+  - 实现状态指示器 (Running/Paused)
+  - 与 WebSocket 服务集成 (PAUSE, RESUME, STEP, STOP 消息)
+  - 创建 PlaybackBar.css 样式文件
+  - 满足 Requirements: 5.1
+
+- [Task 32.2] 实现手动交易按钮
+  - 创建 ui/src/renderer/components/ControlPanel/ManualTrade.tsx
+  - 实现市价买入按钮 (Market Buy)
+  - 实现市价卖出按钮 (Market Sell)
+  - 实现一键清仓按钮 (Close All Positions)
+  - 实现交易配置 (合约、数量)
+  - 实现清仓确认对话框
+  - 与 WebSocket 服务集成 (MANUAL_ORDER, CLOSE_ALL 消息)
+  - 创建 ManualTrade.css 样式文件
+  - 满足 Requirements: 6.1
+
+- 创建 ControlPanel/index.ts 统一导出文件
+  - 导出 PlaybackBar, ManualTrade 组件
+  - 导出 PlaybackState, PlaybackSpeed, ManualTradeConfig 类型
+
+- 更新 panelFactory.tsx 使用完整功能组件
+  - ControlPanel 现在使用 PlaybackBar + ManualTrade 组件
+  - 支持播放控制和手动交易功能
+
+- 更新 i18n 语言包添加控制面板相关翻译
+  - en.json: 添加 playback, manualTrade 分类翻译
+  - zh_cn.json: 添加 playback, manualTrade 分类翻译
+  - zh_tw.json: 添加 playback, manualTrade 分类翻译
+
+### Files Changed
+- ui/src/renderer/components/ControlPanel/PlaybackBar.tsx (新增)
+- ui/src/renderer/components/ControlPanel/PlaybackBar.css (新增)
+- ui/src/renderer/components/ControlPanel/ManualTrade.tsx (新增)
+- ui/src/renderer/components/ControlPanel/ManualTrade.css (新增)
+- ui/src/renderer/components/ControlPanel/index.ts (新增)
+- ui/src/renderer/components/panels/panelFactory.tsx (修改)
+- ui/src/renderer/i18n/locales/en.json (修改)
+- ui/src/renderer/i18n/locales/zh_cn.json (修改)
+- ui/src/renderer/i18n/locales/zh_tw.json (修改)
+
+## [Task 31] 深度图组件 - 2026-01-06
+
+### Added
+- [Task 31.1] 实现 OrderBook 组件
+  - 创建 ui/src/renderer/components/OrderBook/index.tsx
+  - 实现买卖十档显示 (买一到买十/卖一到卖十)
+  - 实现动态更新 (支持动画效果显示价格变化)
+  - 实现三种显示模式:
+    - VERTICAL: 传统垂直列表视图
+    - HORIZONTAL: 深度图可视化
+    - COMBINED: 组合视图
+  - 实现价差 (Spread) 显示
+  - 实现累计成交量柱状图
+  - 实现价格点击回调 (onPriceClick)
+  - 创建 types.ts 定义所有类型:
+    - OrderBookLevel, OrderBookData, OrderBookUpdate
+    - OrderBookDisplayMode, OrderBookTheme
+    - OrderBookProps, OrderBookState
+    - AnimatedOrderBookLevel, PriceLevelChangeType
+  - 创建 OrderBook.css 样式文件
+  - 创建 exports.ts 统一导出文件
+  - 满足 Requirements: 3.6
+
+- 更新 panelFactory.tsx 使用完整功能组件
+  - OrderBookPanel 现在使用 OrderBook 组件
+  - 支持三种显示模式切换
+  - 支持动态数据更新
+
+- 更新 i18n 语言包添加订单簿相关翻译
+  - en.json: 添加 orderBook 分类翻译
+  - zh_cn.json: 添加 orderBook 分类翻译
+  - zh_tw.json: 添加 orderBook 分类翻译
+
+### Files Changed
+- ui/src/renderer/components/OrderBook/index.tsx (新增)
+- ui/src/renderer/components/OrderBook/types.ts (新增)
+- ui/src/renderer/components/OrderBook/OrderBook.css (新增)
+- ui/src/renderer/components/OrderBook/exports.ts (新增)
+- ui/src/renderer/components/panels/panelFactory.tsx (修改)
+- ui/src/renderer/i18n/locales/en.json (修改)
+- ui/src/renderer/i18n/locales/zh_cn.json (修改)
+- ui/src/renderer/i18n/locales/zh_tw.json (修改)
+
+## [Task 30] K 线图组件 - 2026-01-06
+
+### Added
+- [Task 30.1] 实现 Lightweight-charts 集成
+  - 创建 ui/src/renderer/components/KLineChart/index.tsx
+  - 实现 KLineChart 组件基于 Lightweight-charts 库
+  - 实现 K 线渲染 (candlestick series)
+  - 实现成交量渲染 (histogram series)
+  - 实现缩放、拖拽、平移操作 (mouseWheel, pressedMouseMove, pinch)
+  - 实现十字光标和价格追踪
+  - 创建 types.ts 定义所有类型 (CandlestickData, VolumeData, TradeMarker, etc.)
+  - 创建 utils.ts 实现技术指标计算函数
+  - 创建 KLineChart.css 样式文件
+  - 满足 Requirements: 3.1
+
+- [Task 30.2] 实现划线工具
+  - 创建 ui/src/renderer/components/KLineChart/DrawingTools.tsx
+  - 实现趋势线绘制 (TrendLineDrawing)
+  - 实现斐波那契回调线绘制 (FibonacciDrawing)
+  - 实现矩形框绘制 (RectangleDrawing)
+  - 实现绘图工具栏 (选择工具、清除所有)
+  - 实现 SVG 覆盖层渲染绘图对象
+  - 实现坐标暴露给策略 (onDrawingCoordinatesExport)
+  - 实现绘图选择和删除 (Delete/Backspace 键)
+  - 创建 DrawingTools.css 样式文件
+  - 满足 Requirements: 3.2
+
+- [Task 30.3] 实现指标面板
+  - 创建 ui/src/renderer/components/KLineChart/IndicatorPanel.tsx
+  - 实现 MA (移动平均线) 指标
+  - 实现 EMA (指数移动平均) 指标
+  - 实现 MACD 指标 (MACD线、信号线、柱状图)
+  - 实现 RSI 指标
+  - 实现 Bollinger Bands (布林带) 指标
+  - 实现拖拽添加指标功能
+  - 实现指标参数配置面板
+  - 实现指标显示/隐藏切换
+  - 创建 IndicatorPanel.css 样式文件
+  - 满足 Requirements: 3.3
+
+- [Task 30.4] 实现交易标记
+  - 创建 ui/src/renderer/components/KLineChart/TradeMarkers.tsx
+  - 实现开平仓箭头标记 (arrowUp/arrowDown)
+  - 实现悬停显示盈亏详情 (tooltip)
+  - 实现交易统计摘要 (总交易数、胜率、总盈亏)
+  - 实现标记显示/隐藏切换
+  - 实现 createTradeMarkers() 辅助函数
+  - 创建 TradeMarkers.css 样式文件
+  - 满足 Requirements: 3.4, 3.5
+
+- 创建 KLineChartWithTools.tsx 完整功能组件
+  - 集成 KLineChart、DrawingTools、IndicatorPanel
+  - 支持所有绘图和指标功能
+  - 支持交易标记和悬停提示
+
+- 创建 exports.ts 统一导出文件
+  - 导出所有组件: KLineChart, KLineChartWithTools, DrawingTools, IndicatorPanel, TradeMarkers
+  - 导出所有类型和工具函数
+
+- 更新 panelFactory.tsx 使用完整功能组件
+  - KLineChartPanel 现在使用 KLineChartWithTools
+  - 支持绘图工具和指标面板
+
+- 更新 i18n 语言包添加图表相关翻译
+  - en.json: 添加 chart 分类翻译
+  - zh_cn.json: 添加 chart 分类翻译
+  - zh_tw.json: 添加 chart 分类翻译
+
+### Files Changed
+- ui/src/renderer/components/KLineChart/index.tsx (新增)
+- ui/src/renderer/components/KLineChart/types.ts (新增)
+- ui/src/renderer/components/KLineChart/utils.ts (新增)
+- ui/src/renderer/components/KLineChart/KLineChart.css (新增)
+- ui/src/renderer/components/KLineChart/DrawingTools.tsx (新增)
+- ui/src/renderer/components/KLineChart/DrawingTools.css (新增)
+- ui/src/renderer/components/KLineChart/IndicatorPanel.tsx (新增)
+- ui/src/renderer/components/KLineChart/IndicatorPanel.css (新增)
+- ui/src/renderer/components/KLineChart/TradeMarkers.tsx (新增)
+- ui/src/renderer/components/KLineChart/TradeMarkers.css (新增)
+- ui/src/renderer/components/KLineChart/KLineChartWithTools.tsx (新增)
+- ui/src/renderer/components/KLineChart/exports.ts (新增)
+- ui/src/renderer/components/panels/panelFactory.tsx (修改)
+- ui/src/renderer/i18n/locales/en.json (修改)
+- ui/src/renderer/i18n/locales/zh_cn.json (修改)
+- ui/src/renderer/i18n/locales/zh_tw.json (修改)
+
 ## [Task 27.5] 审计修复：Decimal 精度验证 - 2026-01-06
 
 ### Changed

@@ -1,0 +1,407 @@
+/**
+ * Titan-Quant Alert Popup Styles
+ * 
+ * Styles for synchronous alert modal and async toast notifications.
+ */
+
+/* ============================================
+   Sync Alert Modal Overlay
+   ============================================ */
+.alert-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ============================================
+   Sync Alert Modal
+   ============================================ */
+.alert-modal {
+  background-color: var(--bg-secondary, #2d2d2d);
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  max-width: 500px;
+  width: 90%;
+  animation: slideIn 0.3s ease-out;
+  overflow: hidden;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.alert-modal-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-color, #404040);
+}
+
+.alert-modal-header.severity-info {
+  background-color: rgba(23, 162, 184, 0.15);
+  border-left: 4px solid #17a2b8;
+}
+
+.alert-modal-header.severity-warning {
+  background-color: rgba(255, 193, 7, 0.15);
+  border-left: 4px solid #ffc107;
+}
+
+.alert-modal-header.severity-error {
+  background-color: rgba(220, 53, 69, 0.15);
+  border-left: 4px solid #dc3545;
+}
+
+.alert-modal-header.severity-critical {
+  background-color: rgba(114, 28, 36, 0.25);
+  border-left: 4px solid #721c24;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    background-color: rgba(114, 28, 36, 0.25);
+  }
+  50% {
+    background-color: rgba(114, 28, 36, 0.4);
+  }
+}
+
+.alert-modal-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.alert-modal-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary, #ffffff);
+  margin: 0;
+  flex: 1;
+}
+
+.alert-modal-body {
+  padding: 20px;
+}
+
+.alert-modal-message {
+  font-size: 14px;
+  color: var(--text-secondary, #b0b0b0);
+  line-height: 1.6;
+  margin: 0 0 16px 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.alert-modal-timestamp {
+  font-size: 12px;
+  color: var(--text-muted, #808080);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.alert-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 20px;
+  border-top: 1px solid var(--border-color, #404040);
+  background-color: var(--bg-tertiary, #252525);
+}
+
+.alert-modal-button {
+  padding: 10px 24px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.alert-modal-button.primary {
+  background-color: var(--accent-color, #0078d4);
+  color: white;
+}
+
+.alert-modal-button.primary:hover {
+  background-color: var(--accent-hover, #106ebe);
+}
+
+.alert-modal-button.primary:active {
+  transform: scale(0.98);
+}
+
+/* ============================================
+   Toast Container
+   ============================================ */
+.alert-toast-container {
+  position: fixed;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+  max-height: calc(100vh - 40px);
+  overflow: hidden;
+}
+
+.alert-toast-container.top-right {
+  top: 20px;
+  right: 20px;
+}
+
+.alert-toast-container.top-left {
+  top: 20px;
+  left: 20px;
+}
+
+.alert-toast-container.bottom-right {
+  bottom: 20px;
+  right: 20px;
+}
+
+.alert-toast-container.bottom-left {
+  bottom: 20px;
+  left: 20px;
+}
+
+/* ============================================
+   Toast Notification
+   ============================================ */
+.alert-toast {
+  background-color: var(--bg-secondary, #2d2d2d);
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  width: 360px;
+  max-width: calc(100vw - 40px);
+  pointer-events: auto;
+  animation: toastSlideIn 0.3s ease-out;
+  overflow: hidden;
+}
+
+.alert-toast.exiting {
+  animation: toastSlideOut 0.3s ease-in forwards;
+}
+
+@keyframes toastSlideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes toastSlideOut {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+.alert-toast-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+}
+
+.alert-toast-header.severity-info {
+  background-color: rgba(23, 162, 184, 0.15);
+  border-left: 3px solid #17a2b8;
+}
+
+.alert-toast-header.severity-warning {
+  background-color: rgba(255, 193, 7, 0.15);
+  border-left: 3px solid #ffc107;
+}
+
+.alert-toast-header.severity-error {
+  background-color: rgba(220, 53, 69, 0.15);
+  border-left: 3px solid #dc3545;
+}
+
+.alert-toast-header.severity-critical {
+  background-color: rgba(114, 28, 36, 0.25);
+  border-left: 3px solid #721c24;
+}
+
+.alert-toast-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.alert-toast-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary, #ffffff);
+  margin: 0;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.alert-toast-close {
+  background: none;
+  border: none;
+  color: var(--text-muted, #808080);
+  cursor: pointer;
+  padding: 4px;
+  font-size: 16px;
+  line-height: 1;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.alert-toast-close:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary, #ffffff);
+}
+
+.alert-toast-body {
+  padding: 0 14px 12px 14px;
+}
+
+.alert-toast-message {
+  font-size: 13px;
+  color: var(--text-secondary, #b0b0b0);
+  line-height: 1.5;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.alert-toast-timestamp {
+  font-size: 11px;
+  color: var(--text-muted, #808080);
+  margin-top: 8px;
+}
+
+/* Progress bar for auto-dismiss */
+.alert-toast-progress {
+  height: 3px;
+  background-color: var(--bg-tertiary, #252525);
+  overflow: hidden;
+}
+
+.alert-toast-progress-bar {
+  height: 100%;
+  background-color: var(--accent-color, #0078d4);
+  animation: progressShrink linear forwards;
+}
+
+@keyframes progressShrink {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}
+
+/* ============================================
+   Alert Badge (for notification count)
+   ============================================ */
+.alert-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: white;
+}
+
+.alert-badge.severity-info {
+  background-color: #17a2b8;
+}
+
+.alert-badge.severity-warning {
+  background-color: #ffc107;
+  color: #212529;
+}
+
+.alert-badge.severity-error {
+  background-color: #dc3545;
+}
+
+.alert-badge.severity-critical {
+  background-color: #721c24;
+  animation: badgePulse 1s infinite;
+}
+
+@keyframes badgePulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+/* ============================================
+   Responsive Adjustments
+   ============================================ */
+@media (max-width: 480px) {
+  .alert-modal {
+    width: 95%;
+    margin: 10px;
+  }
+
+  .alert-toast {
+    width: calc(100vw - 20px);
+  }
+
+  .alert-toast-container.top-right,
+  .alert-toast-container.top-left {
+    top: 10px;
+    left: 10px;
+    right: 10px;
+  }
+
+  .alert-toast-container.bottom-right,
+  .alert-toast-container.bottom-left {
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
+  }
+}

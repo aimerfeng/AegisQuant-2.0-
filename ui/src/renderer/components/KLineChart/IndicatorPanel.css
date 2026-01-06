@@ -1,0 +1,282 @@
+/**
+ * Indicator Panel Styles
+ */
+
+.indicator-panel {
+  position: absolute;
+  top: 44px;
+  right: 8px;
+  background-color: rgba(30, 34, 45, 0.95);
+  border: 1px solid var(--border-color, #2b2f3a);
+  border-radius: 6px;
+  min-width: 180px;
+  max-width: 250px;
+  z-index: 100;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+
+.indicator-panel.expanded {
+  max-height: 400px;
+}
+
+/* Panel header */
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  cursor: pointer;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-bottom: 1px solid var(--border-color, #2b2f3a);
+  user-select: none;
+}
+
+.panel-header:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.panel-title {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-primary, #d1d4dc);
+}
+
+.panel-toggle {
+  font-size: 10px;
+  color: var(--text-secondary, #787b86);
+}
+
+/* Panel content */
+.panel-content {
+  padding: 8px;
+  max-height: 350px;
+  overflow-y: auto;
+}
+
+/* Indicator options */
+.indicator-options {
+  margin-bottom: 12px;
+}
+
+.options-label,
+.section-label {
+  font-size: 10px;
+  color: var(--text-secondary, #787b86);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.options-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 4px;
+}
+
+.indicator-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 4px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.indicator-option:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: var(--border-color, #2b2f3a);
+}
+
+.indicator-option.dragging {
+  opacity: 0.5;
+  transform: scale(0.95);
+}
+
+.option-icon {
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+
+.option-name {
+  font-size: 9px;
+  color: var(--text-secondary, #787b86);
+}
+
+/* Active indicators */
+.active-indicators {
+  border-top: 1px solid var(--border-color, #2b2f3a);
+  padding-top: 8px;
+}
+
+.indicator-item {
+  background-color: rgba(255, 255, 255, 0.03);
+  border-radius: 4px;
+  margin-bottom: 4px;
+  overflow: hidden;
+}
+
+.indicator-header {
+  display: flex;
+  align-items: center;
+  padding: 6px 8px;
+  gap: 8px;
+}
+
+.color-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.indicator-name {
+  flex: 1;
+  font-size: 11px;
+  color: var(--text-primary, #d1d4dc);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.indicator-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.action-btn {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 10px;
+  opacity: 0.6;
+  transition: all 0.2s;
+}
+
+.action-btn:hover {
+  opacity: 1;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.action-btn.visibility.hidden {
+  opacity: 0.3;
+}
+
+.action-btn.settings.active {
+  background-color: rgba(33, 150, 243, 0.2);
+  opacity: 1;
+}
+
+.action-btn.remove:hover {
+  background-color: rgba(239, 83, 80, 0.2);
+}
+
+/* Indicator settings */
+.indicator-settings {
+  padding: 8px;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-top: 1px solid var(--border-color, #2b2f3a);
+}
+
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.setting-row:last-child {
+  margin-bottom: 0;
+}
+
+.setting-row label {
+  font-size: 10px;
+  color: var(--text-secondary, #787b86);
+}
+
+.setting-row input[type="number"] {
+  width: 50px;
+  padding: 4px 6px;
+  font-size: 11px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-color, #2b2f3a);
+  border-radius: 3px;
+  color: var(--text-primary, #d1d4dc);
+  text-align: right;
+}
+
+.setting-row input[type="number"]:focus {
+  outline: none;
+  border-color: #2196F3;
+}
+
+.setting-row input[type="color"] {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  background: transparent;
+}
+
+.setting-row input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.setting-row input[type="color"]::-webkit-color-swatch {
+  border: 1px solid var(--border-color, #2b2f3a);
+  border-radius: 3px;
+}
+
+/* Empty state */
+.empty-state {
+  padding: 16px;
+  text-align: center;
+  color: var(--text-secondary, #787b86);
+  font-size: 11px;
+}
+
+/* Scrollbar */
+.panel-content::-webkit-scrollbar {
+  width: 4px;
+}
+
+.panel-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.panel-content::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+}
+
+.panel-content::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .indicator-panel {
+    min-width: 150px;
+    max-width: 200px;
+  }
+
+  .options-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .indicator-name {
+    font-size: 10px;
+  }
+}

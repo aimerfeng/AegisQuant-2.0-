@@ -1,0 +1,330 @@
+/**
+ * KLine Chart Styles
+ */
+
+.kline-chart-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  background-color: var(--chart-bg, #1e222d);
+  position: relative;
+  overflow: hidden;
+}
+
+.kline-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-bottom: 1px solid var(--border-color, #2b2f3a);
+  min-height: 36px;
+}
+
+.symbol-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.symbol-info .symbol {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary, #d1d4dc);
+}
+
+.symbol-info .interval {
+  font-size: 12px;
+  color: var(--text-secondary, #787b86);
+  padding: 2px 6px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+.crosshair-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--text-secondary, #787b86);
+}
+
+.crosshair-info .price {
+  font-family: monospace;
+}
+
+.kline-chart {
+  flex: 1;
+  min-height: 0;
+}
+
+/* Tooltip styles */
+.kline-tooltip {
+  position: absolute;
+  z-index: 1000;
+  background-color: rgba(30, 34, 45, 0.95);
+  border: 1px solid var(--border-color, #2b2f3a);
+  border-radius: 6px;
+  padding: 10px 12px;
+  min-width: 180px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  pointer-events: none;
+}
+
+.tooltip-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-color, #2b2f3a);
+}
+
+.tooltip-header .direction {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.tooltip-header .direction.long {
+  background-color: rgba(38, 166, 154, 0.2);
+  color: #26a69a;
+}
+
+.tooltip-header .direction.short {
+  background-color: rgba(239, 83, 80, 0.2);
+  color: #ef5350;
+}
+
+.tooltip-header .action {
+  font-size: 12px;
+  color: var(--text-secondary, #787b86);
+}
+
+.tooltip-header .manual-badge {
+  font-size: 10px;
+  padding: 2px 4px;
+  background-color: rgba(255, 152, 0, 0.2);
+  color: #ff9800;
+  border-radius: 3px;
+  margin-left: auto;
+}
+
+.tooltip-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tooltip-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+}
+
+.tooltip-row .label {
+  color: var(--text-secondary, #787b86);
+}
+
+.tooltip-row .value {
+  color: var(--text-primary, #d1d4dc);
+  font-family: monospace;
+}
+
+.tooltip-row .value.profit {
+  color: #26a69a;
+}
+
+.tooltip-row .value.loss {
+  color: #ef5350;
+}
+
+.tooltip-row .value .percent {
+  margin-left: 4px;
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+/* Loading state */
+.kline-loading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(30, 34, 45, 0.9);
+  color: var(--text-secondary, #787b86);
+  font-size: 14px;
+}
+
+/* Drawing tool cursor styles */
+.kline-chart-container.drawing-mode {
+  cursor: crosshair;
+}
+
+.kline-chart-container.drawing-mode.trend-line {
+  cursor: crosshair;
+}
+
+.kline-chart-container.drawing-mode.fibonacci {
+  cursor: crosshair;
+}
+
+.kline-chart-container.drawing-mode.rectangle {
+  cursor: crosshair;
+}
+
+/* Indicator panel styles */
+.indicator-panel {
+  position: absolute;
+  top: 44px;
+  right: 8px;
+  background-color: rgba(30, 34, 45, 0.95);
+  border: 1px solid var(--border-color, #2b2f3a);
+  border-radius: 6px;
+  padding: 8px;
+  min-width: 150px;
+  z-index: 100;
+}
+
+.indicator-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.indicator-item:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.indicator-item .name {
+  font-size: 12px;
+  color: var(--text-primary, #d1d4dc);
+}
+
+.indicator-item .color-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.indicator-item .remove-btn {
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: var(--text-secondary, #787b86);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.indicator-item:hover .remove-btn {
+  opacity: 1;
+}
+
+.indicator-item .remove-btn:hover {
+  color: #ef5350;
+}
+
+/* Drawing overlay for custom drawings */
+.drawing-overlay {
+  position: absolute;
+  top: 44px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+}
+
+.drawing-overlay.active {
+  pointer-events: auto;
+}
+
+.drawing-overlay svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* Trend line styles */
+.trend-line {
+  stroke-width: 1;
+  fill: none;
+}
+
+.trend-line.selected {
+  stroke-width: 2;
+}
+
+/* Fibonacci styles */
+.fibonacci-level {
+  stroke-dasharray: 4, 4;
+  stroke-width: 1;
+}
+
+.fibonacci-label {
+  font-size: 10px;
+  fill: var(--text-secondary, #787b86);
+}
+
+/* Rectangle styles */
+.rectangle-drawing {
+  stroke-width: 1;
+  fill-opacity: 0.1;
+}
+
+.rectangle-drawing.selected {
+  stroke-width: 2;
+}
+
+/* Control points for drawings */
+.control-point {
+  fill: #fff;
+  stroke: #2196f3;
+  stroke-width: 2;
+  cursor: move;
+}
+
+.control-point:hover {
+  fill: #2196f3;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .kline-header {
+    padding: 6px 8px;
+  }
+
+  .symbol-info .symbol {
+    font-size: 12px;
+  }
+
+  .symbol-info .interval {
+    font-size: 10px;
+  }
+
+  .crosshair-info {
+    font-size: 10px;
+  }
+
+  .kline-tooltip {
+    min-width: 150px;
+    padding: 8px 10px;
+  }
+
+  .tooltip-row {
+    font-size: 11px;
+  }
+}

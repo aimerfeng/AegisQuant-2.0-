@@ -3,6 +3,9 @@
  * 
  * Root component that sets up the application layout,
  * WebSocket connection, and global state management.
+ * 
+ * Requirements:
+ * - 11.4: UI_Client SHALL display sync alerts as modal dialogs
  */
 
 import React, { useEffect } from 'react';
@@ -11,6 +14,7 @@ import { useConnectionStore } from './stores/connectionStore';
 import { useI18nStore } from './stores/i18nStore';
 import MainLayout from './components/MainLayout';
 import ConnectionStatus from './components/ConnectionStatus';
+import { AlertContainer } from './components/AlertPopup';
 import './styles/App.css';
 
 const App: React.FC = () => {
@@ -41,6 +45,13 @@ const App: React.FC = () => {
         <span>{t('app.version', { version: '1.0.0' })}</span>
         <span className="language-indicator">{currentLanguage.toUpperCase()}</span>
       </footer>
+      
+      {/* Alert Container for sync/async notifications */}
+      <AlertContainer 
+        maxToasts={5}
+        position="top-right"
+        autoDismissTimeout={5000}
+      />
     </div>
   );
 };

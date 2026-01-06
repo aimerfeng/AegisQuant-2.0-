@@ -1,0 +1,167 @@
+/**
+ * Titan-Quant Code Editor Styles
+ * 
+ * Styling for Monaco Editor integration
+ */
+
+.code-editor-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: var(--bg-secondary, #1e1e1e);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.code-editor-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background-color: var(--bg-tertiary, #252526);
+  border-bottom: 1px solid var(--border-color, #3c3c3c);
+}
+
+.editor-language {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary, #858585);
+  padding: 2px 8px;
+  background-color: var(--bg-primary, #1e1e1e);
+  border-radius: 4px;
+}
+
+.editor-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.editor-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  font-size: 12px;
+  color: var(--text-primary, #cccccc);
+  background-color: var(--bg-primary, #1e1e1e);
+  border: 1px solid var(--border-color, #3c3c3c);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.editor-action-btn:hover:not(:disabled) {
+  background-color: var(--accent-color, #0e639c);
+  border-color: var(--accent-color, #0e639c);
+}
+
+.editor-action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.code-editor-monaco {
+  flex: 1;
+  min-height: 200px;
+}
+
+.code-editor-loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: var(--text-secondary, #858585);
+  font-size: 14px;
+}
+
+/* Monaco editor customizations */
+.monaco-editor {
+  padding-top: 8px;
+}
+
+.monaco-editor .margin {
+  background-color: var(--bg-secondary, #1e1e1e) !important;
+}
+
+.monaco-editor .monaco-scrollable-element > .scrollbar > .slider {
+  background: var(--scrollbar-color, rgba(121, 121, 121, 0.4));
+  border-radius: 4px;
+}
+
+.monaco-editor .monaco-scrollable-element > .scrollbar > .slider:hover {
+  background: var(--scrollbar-hover-color, rgba(100, 100, 100, 0.7));
+}
+
+/* Minimap styling */
+.monaco-editor .minimap {
+  opacity: 0.8;
+}
+
+.monaco-editor .minimap-slider {
+  background: rgba(121, 121, 121, 0.2);
+}
+
+.monaco-editor .minimap-slider:hover {
+  background: rgba(121, 121, 121, 0.4);
+}
+
+/* Suggestion widget styling */
+.monaco-editor .suggest-widget {
+  background-color: var(--bg-tertiary, #252526) !important;
+  border: 1px solid var(--border-color, #3c3c3c) !important;
+}
+
+.monaco-editor .suggest-widget .monaco-list-row.focused {
+  background-color: var(--accent-color, #0e639c) !important;
+}
+
+/* Parameter hints styling */
+.monaco-editor .parameter-hints-widget {
+  background-color: var(--bg-tertiary, #252526) !important;
+  border: 1px solid var(--border-color, #3c3c3c) !important;
+}
+
+/* Find widget styling */
+.monaco-editor .find-widget {
+  background-color: var(--bg-tertiary, #252526) !important;
+  border: 1px solid var(--border-color, #3c3c3c) !important;
+}
+
+/* Context menu styling */
+.monaco-editor .context-view {
+  background-color: var(--bg-tertiary, #252526) !important;
+  border: 1px solid var(--border-color, #3c3c3c) !important;
+}
+
+/* Bracket pair colorization */
+.monaco-editor .bracket-highlighting-0 {
+  color: #ffd700 !important;
+}
+
+.monaco-editor .bracket-highlighting-1 {
+  color: #da70d6 !important;
+}
+
+.monaco-editor .bracket-highlighting-2 {
+  color: #179fff !important;
+}
+
+/* Line highlight */
+.monaco-editor .current-line {
+  background-color: rgba(255, 255, 255, 0.04) !important;
+  border: none !important;
+}
+
+/* Selection highlight */
+.monaco-editor .selected-text {
+  background-color: rgba(38, 79, 120, 0.6) !important;
+}
+
+/* Word highlight */
+.monaco-editor .wordHighlight {
+  background-color: rgba(87, 87, 87, 0.4) !important;
+}
+
+.monaco-editor .wordHighlightStrong {
+  background-color: rgba(87, 87, 87, 0.6) !important;
+}

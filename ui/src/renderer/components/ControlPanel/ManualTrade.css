@@ -1,0 +1,229 @@
+/**
+ * Manual Trade Component Styles
+ * 
+ * Styles for the manual trading controls.
+ */
+
+.manual-trade {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  background-color: var(--color-bg-tertiary);
+  border-radius: var(--radius-sm);
+}
+
+/* Trade Configuration */
+.trade-config {
+  display: flex;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+}
+
+.config-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.config-label {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.config-input {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  min-width: 100px;
+}
+
+.config-input-volume {
+  min-width: 80px;
+  width: 80px;
+}
+
+/* Trade Buttons */
+.trade-buttons {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.trade-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--font-size-md);
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+  min-width: 100px;
+}
+
+.trade-btn-icon {
+  font-size: var(--font-size-sm);
+}
+
+.trade-btn-text {
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Buy Button */
+.trade-btn-buy {
+  background-color: var(--color-long);
+  border: 1px solid var(--color-long);
+  color: white;
+  flex: 1;
+}
+
+.trade-btn-buy:hover:not(:disabled) {
+  background-color: #2eb89e;
+  border-color: #2eb89e;
+}
+
+.trade-btn-buy:active:not(:disabled) {
+  background-color: #1e9a84;
+}
+
+/* Sell Button */
+.trade-btn-sell {
+  background-color: var(--color-short);
+  border: 1px solid var(--color-short);
+  color: white;
+  flex: 1;
+}
+
+.trade-btn-sell:hover:not(:disabled) {
+  background-color: #f16560;
+  border-color: #f16560;
+}
+
+.trade-btn-sell:active:not(:disabled) {
+  background-color: #e53935;
+}
+
+/* Close All Section */
+.close-all-section {
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--spacing-md);
+}
+
+.trade-btn-close-all {
+  width: 100%;
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+}
+
+.trade-btn-close-all:hover:not(:disabled) {
+  background-color: var(--color-error);
+  border-color: var(--color-error);
+  color: white;
+}
+
+.trade-btn-close-all:active:not(:disabled) {
+  background-color: #d32f2f;
+}
+
+/* Disabled state */
+.trade-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Confirmation Dialog */
+.confirm-dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.confirm-dialog {
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-lg);
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.confirm-title {
+  font-size: var(--font-size-lg);
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-sm);
+}
+
+.confirm-message {
+  font-size: var(--font-size-md);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-lg);
+  line-height: 1.5;
+}
+
+.confirm-buttons {
+  display: flex;
+  gap: var(--spacing-sm);
+  justify-content: flex-end;
+}
+
+.confirm-btn {
+  padding: var(--spacing-sm) var(--spacing-lg);
+  font-size: var(--font-size-md);
+  border-radius: var(--radius-sm);
+  min-width: 80px;
+}
+
+.confirm-btn-cancel {
+  background-color: var(--color-bg-tertiary);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+}
+
+.confirm-btn-cancel:hover {
+  background-color: var(--color-bg-hover);
+}
+
+.confirm-btn-confirm {
+  background-color: var(--color-error);
+  border: 1px solid var(--color-error);
+  color: white;
+}
+
+.confirm-btn-confirm:hover {
+  background-color: #d32f2f;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .trade-config {
+    flex-direction: column;
+  }
+
+  .config-field {
+    width: 100%;
+  }
+
+  .config-input {
+    width: 100%;
+  }
+
+  .trade-buttons {
+    flex-direction: column;
+  }
+
+  .trade-btn {
+    min-width: auto;
+  }
+}

@@ -1,0 +1,311 @@
+/**
+ * Titan-Quant Login Component Styles
+ * 
+ * Provides styling for the login interface with dark theme support.
+ */
+
+.login-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  width: 100%;
+  background: linear-gradient(135deg, var(--color-bg-primary) 0%, #1a1a2e 100%);
+  padding: var(--spacing-md);
+}
+
+.login-card {
+  width: 100%;
+  max-width: 400px;
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  padding: var(--spacing-xl);
+  border: 1px solid var(--color-border);
+}
+
+/* Logo Section */
+.login-logo {
+  text-align: center;
+  margin-bottom: var(--spacing-xl);
+}
+
+.login-logo-text {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+}
+
+.login-logo-icon {
+  font-size: 32px;
+}
+
+.login-logo-text h1 {
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.login-logo-image {
+  max-width: 200px;
+  height: auto;
+}
+
+.login-subtitle {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  margin-top: var(--spacing-sm);
+}
+
+/* Form Styles */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+/* Error Message */
+.login-error {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: rgba(244, 67, 54, 0.1);
+  border: 1px solid var(--color-error);
+  border-radius: var(--radius-sm);
+  color: var(--color-error);
+  font-size: var(--font-size-sm);
+}
+
+.login-error-icon {
+  flex-shrink: 0;
+}
+
+.login-error-text {
+  flex: 1;
+}
+
+/* Field Styles */
+.login-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.login-label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.login-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.login-input-icon {
+  position: absolute;
+  left: var(--spacing-md);
+  font-size: var(--font-size-md);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.login-input {
+  width: 100%;
+  padding: var(--spacing-md);
+  padding-left: calc(var(--spacing-md) * 2 + 20px);
+  padding-right: var(--spacing-md);
+  background: var(--color-bg-tertiary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-md);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.login-input:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px rgba(0, 120, 212, 0.2);
+  outline: none;
+}
+
+.login-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.login-input::placeholder {
+  color: var(--color-text-muted);
+}
+
+/* Password Toggle Button */
+.login-password-toggle {
+  position: absolute;
+  right: var(--spacing-sm);
+  background: transparent;
+  border: none;
+  padding: var(--spacing-xs);
+  cursor: pointer;
+  font-size: var(--font-size-md);
+  opacity: 0.7;
+  transition: opacity var(--transition-fast);
+}
+
+.login-password-toggle:hover {
+  opacity: 1;
+}
+
+.login-password-toggle:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+/* Password field needs extra padding for toggle button */
+.login-field:has(.login-password-toggle) .login-input {
+  padding-right: calc(var(--spacing-md) * 2 + 24px);
+}
+
+/* Options Row */
+.login-options {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.login-remember {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.login-remember input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-accent);
+  cursor: pointer;
+}
+
+.login-remember input[type="checkbox"]:disabled {
+  cursor: not-allowed;
+}
+
+/* Submit Button */
+.login-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  width: 100%;
+  padding: var(--spacing-md);
+  background: var(--color-accent);
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-md);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color var(--transition-fast), transform var(--transition-fast);
+  margin-top: var(--spacing-sm);
+}
+
+.login-button:hover:not(:disabled) {
+  background: var(--color-accent-hover);
+}
+
+.login-button:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.login-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Loading Spinner */
+.login-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: login-spin 0.8s linear infinite;
+}
+
+@keyframes login-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Footer */
+.login-footer {
+  margin-top: var(--spacing-xl);
+  text-align: center;
+  padding-top: var(--spacing-md);
+  border-top: 1px solid var(--color-border);
+}
+
+.login-version {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 480px) {
+  .login-card {
+    padding: var(--spacing-lg);
+  }
+
+  .login-logo-text h1 {
+    font-size: var(--font-size-lg);
+  }
+
+  .login-logo-icon {
+    font-size: 28px;
+  }
+}
+
+/* Focus visible for accessibility */
+.login-input:focus-visible,
+.login-button:focus-visible,
+.login-password-toggle:focus-visible,
+.login-remember input:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .login-card {
+    border-width: 2px;
+  }
+
+  .login-input {
+    border-width: 2px;
+  }
+
+  .login-button {
+    border: 2px solid white;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .login-spinner {
+    animation: none;
+  }
+
+  .login-button,
+  .login-input,
+  .login-password-toggle {
+    transition: none;
+  }
+}
