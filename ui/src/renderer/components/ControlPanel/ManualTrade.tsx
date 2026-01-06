@@ -11,8 +11,8 @@
 
 import React, { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useConnectionStore } from '../../stores/connectionStore';
-import { MessageType, ManualOrderPayload } from '../../types/websocket';
+import { useIntegration } from '../../hooks/useIntegration';
+import { ManualOrderPayload } from '../../types/websocket';
 import './ManualTrade.css';
 
 export interface ManualTradeConfig {
@@ -37,16 +37,14 @@ const ManualTrade: React.FC<ManualTradeProps> = ({
   onCloseAll,
 }) => {
   const { t } = useTranslation();
-  const { wsService, connectionState } = useConnectionStore();
+  const { isConnected, submitManualOrder, closeAllPositions } = useIntegration();
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showConfirmCloseAll, setShowConfirmCloseAll] = useState(false);
   const [tradeConfig, setTradeConfig] = useState<ManualTradeConfig>(config);
 
-  const isConnected = connectionState === 'connected';
-
   const handleBuy = useCallback(async () => {
-    if (!wsService || !isConnected || isSubmitting) return;
+    if (!isConnected || isSubmitting) return;
 
     setIsSubmitting(true);
     
@@ -59,15 +57,17 @@ const ManualTrade: React.FC<ManualTradeProps> = ({
     };
 
     try {
-      wsService.send(MessageType.MANUAL_ORDER, order);
+      await submitManualOrder(order);
       onOrderSubmitted?.(order);
+    } catch (error) {
+      console.error('Failed to submit buy order:', error);
     } finally {
       setIsSubmitting(false);
     }
-  }, [wsService, isConnected, isSubmitting, tradeConfig, onOrderSubmitted]);
+  }, [isConnected, isSubmitting, tradeConfig, submitManualOrder, onOrderSubmitted]);
 
   const handleSell = useCallback(async () => {
-    if (!wsService || !isConnected || isSubmitting) return;
+    if (!isConnected || isSubmitting) return;
 
     setIsSubmitting(true);
     
@@ -80,26 +80,33 @@ const ManualTrade: React.FC<ManualTradeProps> = ({
     };
 
     try {
-      wsService.send(MessageType.MANUAL_ORDER, order);
+      await submitManualOrder(order);
       onOrderSubmitted?.(order);
+    } catch (error) {
+      console.error('Failed to submit sell order:', error);
     } finally {
       setIsSubmitting(false);
     }
-  }, [wsService, isConnected, isSubmitting, tradeConfig, onOrderSubmitted]);
+  }, [isConnected, isSubmitting, tradeConfig, submitManualOrder, onOrderSubmitted]);
 
   const handleCloseAll = useCallback(() => {
-    if (!wsService || !isConnected) return;
+    if (!isConnected) return;
     
     setShowConfirmCloseAll(true);
-  }, [wsService, isConnected]);
+  }, [isConnected]);
 
-  const confirmCloseAll = useCallback(() => {
-    if (!wsService || !isConnected) return;
+  const confirmCloseAll = useCallback(async () => {
+    if (!isConnected) return;
 
-    wsService.send(MessageType.CLOSE_ALL, {});
-    setShowConfirmCloseAll(false);
-    onCloseAll?.();
-  }, [wsService, isConnected, onCloseAll]);
+    try {
+      await closeAllPositions();
+      setShowConfirmCloseAll(false);
+      onCloseAll?.();
+    } catch (error) {
+      console.error('Failed to close all positions:', error);
+      setShowConfirmCloseAll(false);
+    }
+  }, [isConnected, closeAllPositions, onCloseAll]);
 
   const cancelCloseAll = useCallback(() => {
     setShowConfirmCloseAll(false);

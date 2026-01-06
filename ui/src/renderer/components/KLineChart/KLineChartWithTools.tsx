@@ -18,17 +18,16 @@ import {
   Time,
   CrosshairMode,
   LineStyle,
+  LineWidth,
   SeriesMarker,
   MouseEventParams,
 } from 'lightweight-charts';
 import {
   KLineChartProps,
-  CandlestickData,
   Drawing,
   DrawingToolType,
   Indicator,
   IndicatorType,
-  ChartTheme,
   ChartState,
   darkTheme,
   TradeMarker,
@@ -46,7 +45,6 @@ import {
   generateVolumeData,
   formatPrice,
   formatPercent,
-  generateId,
 } from './utils';
 import DrawingTools from './DrawingTools';
 import IndicatorPanel from './IndicatorPanel';
@@ -330,7 +328,7 @@ const KLineChartWithTools: React.FC<KLineChartWithToolsProps> = ({
           if (!series) {
             series = chartRef.current!.addLineSeries({
               color: config.color,
-              lineWidth: config.lineWidth,
+              lineWidth: config.lineWidth as LineWidth,
               priceScaleId: 'right',
             });
             indicatorSeriesRef.current.set(indicator.id, series);

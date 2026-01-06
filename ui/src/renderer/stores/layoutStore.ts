@@ -31,9 +31,9 @@ const createDefaultLayout = (): LayoutConfig => ({
   root: {
     type: ItemType.row,
     content: [
-      // Left sidebar - Strategies & Positions
+      // Left sidebar - Positions
       {
-        type: ItemType.column,
+        type: ItemType.stack,
         width: 15,
         content: [
           {
@@ -51,25 +51,35 @@ const createDefaultLayout = (): LayoutConfig => ({
         content: [
           // Chart area
           {
-            type: ItemType.component,
-            componentType: PanelType.KLINE_CHART,
-            title: 'K-Line Chart',
+            type: ItemType.stack,
             height: 70,
-            componentState: {},
-          } as ComponentItemConfig,
+            content: [
+              {
+                type: ItemType.component,
+                componentType: PanelType.KLINE_CHART,
+                title: 'K-Line Chart',
+                componentState: {},
+              } as ComponentItemConfig,
+            ],
+          },
           // Log panel
           {
-            type: ItemType.component,
-            componentType: PanelType.LOG_PANEL,
-            title: 'Logs',
+            type: ItemType.stack,
             height: 30,
-            componentState: {},
-          } as ComponentItemConfig,
+            content: [
+              {
+                type: ItemType.component,
+                componentType: PanelType.LOG_PANEL,
+                title: 'Logs',
+                componentState: {},
+              } as ComponentItemConfig,
+            ],
+          },
         ],
       },
       // Right sidebar - Order Book
       {
-        type: ItemType.column,
+        type: ItemType.stack,
         width: 25,
         content: [
           {

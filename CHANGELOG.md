@@ -7,6 +7,144 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [Task 41] 启动脚本 - 2026-01-06
+
+### Added
+- [Task 41.1] 创建启动脚本
+  - 创建 bin/start_server.bat (Windows 批处理脚本)
+    - 支持命令行参数: --host, --port, --debug, --help
+    - 自动检测 Python 环境和虚拟环境
+    - 自动安装缺失依赖
+    - 自动创建必要目录 (logs, database, reports)
+    - 设置环境变量 PYTHONPATH, TITAN_QUANT_HOST, TITAN_QUANT_PORT
+  - 创建 bin/start_server.sh (Linux/Mac Shell 脚本)
+    - 支持命令行参数: --host, --port, --debug, --daemon, --stop, --status, --help
+    - 支持后台守护进程模式 (--daemon)
+    - 支持 PID 文件管理和进程控制
+    - 彩色输出和友好的状态提示
+    - 自动检测 Python 环境和虚拟环境
+    - 自动安装缺失依赖
+  - 创建 core/__main__.py (Python 命令行入口)
+    - 实现 argparse 命令行参数解析
+    - 实现日志配置 (控制台 + 文件)
+    - 实现信号处理 (SIGINT, SIGTERM)
+    - 实现优雅关闭
+    - 支持 Windows 和 Unix 平台
+  - 创建 ui/electron-builder.yml (Electron 打包配置)
+    - 配置 Windows NSIS 安装程序
+    - 配置 macOS DMG 安装包
+    - 配置 Linux AppImage/DEB/RPM 包
+    - 配置应用图标和元数据
+    - 配置自动更新 (GitHub Releases)
+  - 创建 ui/build/entitlements.mac.plist (macOS 权限配置)
+    - 网络访问权限 (WebSocket 通信)
+    - 文件访问权限 (数据存储)
+    - Hardened Runtime 配置
+  - 创建 ui/build/installer.nsh (Windows NSIS 自定义脚本)
+    - 创建额外目录 (logs, database, reports, strategies)
+    - 设置目录权限
+    - 卸载时可选清理用户数据
+  - 更新 core/handlers.py 添加 create_message_handlers() 函数
+  - 满足 Requirements: 启动脚本
+
+### Usage
+启动后端服务器:
+```bash
+# Windows
+bin\start_server.bat
+bin\start_server.bat --port 9000 --debug
+
+# Linux/Mac
+./bin/start_server.sh
+./bin/start_server.sh --port 9000 --debug
+./bin/start_server.sh --daemon  # 后台运行
+./bin/start_server.sh --stop    # 停止后台进程
+
+# 直接使用 Python
+python -m core --help
+python -m core --host 0.0.0.0 --port 8765 --debug
+```
+
+启动前端应用:
+```bash
+cd ui
+npm install
+npm run dev    # 开发模式
+npm run build  # 构建
+npm run dist   # 打包发布
+```
+
+### Files Changed
+- bin/start_server.bat (新增)
+- bin/start_server.sh (新增)
+- core/__main__.py (新增)
+- core/handlers.py (修改 - 添加 create_message_handlers)
+- ui/electron-builder.yml (新增)
+- ui/build/entitlements.mac.plist (新增)
+- ui/build/installer.nsh (新增)
+
+## [Task 40] 前后端集成 - 2026-01-06
+
+### Added
+- [Task 40.1] 实现完整通信流程
+  - 创建 ui/src/renderer/services/integration.ts
+    - IntegrationService 类实现前后端通信集成
+    - WebSocket 连接管理 (connect/disconnect)
+    - 消息发送/接收 (request-response 模式)
+    - 状态同步 (STATE_SYNC 消息处理)
+    - 回测控制 (startBacktest, pause, resume, step, stop)
+    - 策略操作 (loadStrategy, reloadStrategy, updateParams)
+    - 手动交易 (manualOrder, cancelOrder, closeAll)
+    - 快照管理 (saveSnapshot, loadSnapshot)
+    - 告警处理 (acknowledgeAlert)
+    - 自动更新 Zustand stores (backtestStore, strategyStore, alertStore)
+  - 创建 ui/src/renderer/hooks/useIntegration.ts
+    - React Hook 封装 IntegrationService
+    - 提供组件级别的集成服务访问
+  - 创建 ui/src/renderer/hooks/index.ts
+    - 统一导出 hooks
+  - 创建 ui/src/renderer/services/index.ts
+    - 统一导出 services
+  - 更新 ui/src/renderer/types/websocket.ts
+    - 添加 STATE_SYNC, REQUEST_STATE, RESPONSE 消息类型
+  - 更新 ui/src/renderer/App.tsx
+    - 使用 IntegrationService 替代原始 connectionStore
+    - 自动连接 WebSocket
+  - 更新 ui/src/renderer/components/ControlPanel/PlaybackBar.tsx
+    - 使用 useIntegration hook 进行回测控制
+  - 更新 ui/src/renderer/components/ControlPanel/ManualTrade.tsx
+    - 使用 useIntegration hook 进行手动交易
+  - 更新 ui/src/renderer/components/AlertPopup/AlertContainer.tsx
+    - 使用 useIntegration hook 进行告警确认
+  - 满足 Requirements: 1.1, 1.3, 1.4
+
+### Fixed
+- 修复 KLineChart 组件 TypeScript 类型错误
+  - DrawingTools.tsx: 修复 previewDrawing 类型为 `Drawing | null`
+  - KLineChartWithTools.tsx: 修复 lineWidth 类型转换为 `LineWidth`
+  - index.tsx: 修复 lineWidth 类型转换为 `LineWidth`
+  - 移除未使用的导入 (CandlestickData, ChartTheme, generateId, etc.)
+- 修复 WorkspaceLayout.tsx Golden-Layout 类型兼容性
+  - 修复 bindComponent 返回类型为 `ComponentContainer.BindableComponent`
+  - 修复 saveLayout 配置类型转换
+  - 修复 registerComponent 调用方式
+  - 修复 substr 弃用警告，改用 slice
+
+### Files Changed
+- ui/src/renderer/services/integration.ts (新增)
+- ui/src/renderer/hooks/useIntegration.ts (新增)
+- ui/src/renderer/hooks/index.ts (新增)
+- ui/src/renderer/services/index.ts (新增)
+- ui/src/renderer/types/websocket.ts (修改)
+- ui/src/renderer/App.tsx (修改)
+- ui/src/renderer/components/ControlPanel/PlaybackBar.tsx (修改)
+- ui/src/renderer/components/ControlPanel/ManualTrade.tsx (修改)
+- ui/src/renderer/components/AlertPopup/AlertContainer.tsx (修改)
+- ui/src/renderer/components/KLineChart/DrawingTools.tsx (修复)
+- ui/src/renderer/components/KLineChart/KLineChartWithTools.tsx (修复)
+- ui/src/renderer/components/KLineChart/index.tsx (修复)
+- ui/src/renderer/layouts/WorkspaceLayout.tsx (修复)
+
 ## [Task 39] 状态管理 - 2026-01-06
 
 ### Added

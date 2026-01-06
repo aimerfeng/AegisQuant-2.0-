@@ -11,8 +11,8 @@
 
 import React, { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useConnectionStore } from '../../stores/connectionStore';
-import { MessageType } from '../../types/websocket';
+import { useIntegration } from '../../hooks/useIntegration';
+import { useBacktestStore, usePlaybackState } from '../../stores/backtestStore';
 import './PlaybackBar.css';
 
 export type PlaybackSpeed = 1 | 2 | 4 | 10;
@@ -36,17 +36,17 @@ const PlaybackBar: React.FC<PlaybackBarProps> = ({
   onStateChange,
 }) => {
   const { t } = useTranslation();
-  const { wsService, connectionState } = useConnectionStore();
+  const { isConnected, pause, resume, step, stop } = useIntegration();
+  const backtestPlayback = usePlaybackState();
+  const { play: storePlay, pause: storePause, setPlaybackSpeed } = useBacktestStore();
   
   const [playbackState, setPlaybackState] = useState<PlaybackState>({
-    isPlaying: false,
-    speed: 1,
-    currentTime: '--:--:--',
-    progress: 0,
+    isPlaying: backtestPlayback.isPlaying,
+    speed: backtestPlayback.speed,
+    currentTime: backtestPlayback.currentTime,
+    progress: backtestPlayback.progress,
     ...initialState,
   });
-
-  const isConnected = connectionState === 'connected';
 
   const updateState = useCallback((updates: Partial<PlaybackState>) => {
     setPlaybackState(prev => {
@@ -56,49 +56,69 @@ const PlaybackBar: React.FC<PlaybackBarProps> = ({
     });
   }, [onStateChange]);
 
-  const handlePlayPause = useCallback(() => {
-    if (!wsService || !isConnected) return;
+  const handlePlayPause = useCallback(async () => {
+    if (!isConnected) return;
 
     const newIsPlaying = !playbackState.isPlaying;
     
-    if (newIsPlaying) {
-      wsService.send(MessageType.RESUME, { speed: playbackState.speed });
-    } else {
-      wsService.send(MessageType.PAUSE, {});
+    try {
+      if (newIsPlaying) {
+        await resume();
+        storePlay();
+      } else {
+        await pause();
+        storePause();
+      }
+      updateState({ isPlaying: newIsPlaying });
+    } catch (error) {
+      console.error('Failed to toggle playback:', error);
     }
-    
-    updateState({ isPlaying: newIsPlaying });
-  }, [wsService, isConnected, playbackState.isPlaying, playbackState.speed, updateState]);
+  }, [isConnected, playbackState.isPlaying, resume, pause, storePlay, storePause, updateState]);
 
-  const handleStep = useCallback(() => {
-    if (!wsService || !isConnected) return;
+  const handleStep = useCallback(async () => {
+    if (!isConnected) return;
     
-    // Ensure paused before stepping
-    if (playbackState.isPlaying) {
-      wsService.send(MessageType.PAUSE, {});
-      updateState({ isPlaying: false });
+    try {
+      // Ensure paused before stepping
+      if (playbackState.isPlaying) {
+        await pause();
+        storePause();
+        updateState({ isPlaying: false });
+      }
+      
+      await step();
+    } catch (error) {
+      console.error('Failed to step:', error);
     }
-    
-    wsService.send(MessageType.STEP, {});
-  }, [wsService, isConnected, playbackState.isPlaying, updateState]);
+  }, [isConnected, playbackState.isPlaying, pause, step, storePause, updateState]);
 
-  const handleSpeedChange = useCallback((speed: PlaybackSpeed) => {
-    if (!wsService || !isConnected) return;
+  const handleSpeedChange = useCallback(async (speed: PlaybackSpeed) => {
+    if (!isConnected) return;
     
+    setPlaybackSpeed(speed);
     updateState({ speed });
     
     // If currently playing, update the speed on the server
     if (playbackState.isPlaying) {
-      wsService.send(MessageType.RESUME, { speed });
+      try {
+        await resume();
+      } catch (error) {
+        console.error('Failed to update speed:', error);
+      }
     }
-  }, [wsService, isConnected, playbackState.isPlaying, updateState]);
+  }, [isConnected, playbackState.isPlaying, setPlaybackSpeed, resume, updateState]);
 
-  const handleStop = useCallback(() => {
-    if (!wsService || !isConnected) return;
+  const handleStop = useCallback(async () => {
+    if (!isConnected) return;
     
-    wsService.send(MessageType.STOP, {});
-    updateState({ isPlaying: false, progress: 0 });
-  }, [wsService, isConnected, updateState]);
+    try {
+      await stop();
+      storePause();
+      updateState({ isPlaying: false, progress: 0 });
+    } catch (error) {
+      console.error('Failed to stop:', error);
+    }
+  }, [isConnected, stop, storePause, updateState]);
 
   return (
     <div className="playback-bar">

@@ -13,13 +13,17 @@ import {
   GoldenLayout,
   LayoutConfig,
   ComponentContainer,
-  JsonValue,
   ResolvedComponentItemConfig,
 } from 'golden-layout';
 import { useTranslation } from 'react-i18next';
 import { useLayoutStore } from '../stores/layoutStore';
 import { PanelType, PanelComponentProps } from '../types/layout';
 import { getPanelComponent } from '../components/panels/panelFactory';
+
+// Import Golden Layout CSS
+import 'golden-layout/dist/css/goldenlayout-base.css';
+import 'golden-layout/dist/css/themes/goldenlayout-dark-theme.css';
+
 import './WorkspaceLayout.css';
 
 /**
@@ -50,7 +54,7 @@ const WorkspaceLayout: React.FC = () => {
    * Create a unique ID for component instances
    */
   const createComponentId = useCallback((): string => {
-    return `gl-component-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    return `gl-component-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
   }, []);
 
   /**
@@ -59,9 +63,11 @@ const WorkspaceLayout: React.FC = () => {
   const bindComponent = useCallback((
     container: ComponentContainer,
     itemConfig: ResolvedComponentItemConfig
-  ): void => {
+  ): ComponentContainer.BindableComponent => {
     const componentType = itemConfig.componentType as PanelType;
     const componentId = createComponentId();
+    
+    console.log('[WorkspaceLayout] Binding component:', componentType, componentId);
     
     // Get the React component for this panel type
     const PanelComponent = getPanelComponent(componentType);
@@ -95,6 +101,12 @@ const WorkspaceLayout: React.FC = () => {
         componentRefs.current.delete(componentId);
       }
     });
+
+    // Return bindable component (required by BindComponentEventHandler)
+    return {
+      component: containerElement,
+      virtual: false,
+    };
   }, [createComponentId]);
 
   /**
@@ -117,7 +129,8 @@ const WorkspaceLayout: React.FC = () => {
     if (goldenLayoutRef.current) {
       try {
         const config = goldenLayoutRef.current.saveLayout();
-        setCurrentLayoutConfig(config);
+        // Cast to LayoutConfig for storage (ResolvedLayoutConfig is compatible at runtime)
+        setCurrentLayoutConfig(config as unknown as LayoutConfig);
       } catch (err) {
         console.error('Failed to save layout state:', err);
       }
@@ -133,9 +146,18 @@ const WorkspaceLayout: React.FC = () => {
       return;
     }
 
+    // Check container has dimensions
+    const { clientWidth, clientHeight } = containerRef.current;
+    if (clientWidth === 0 || clientHeight === 0) {
+      // Retry after a short delay
+      setTimeout(() => initializeLayout(), 50);
+      return;
+    }
+
     try {
-      // Get layout config (use saved or default)
-      const layoutConfig = currentLayoutConfig || getDefaultLayout();
+      // Always use default layout to avoid corrupted saved data issues
+      // TODO: Implement proper layout migration/validation
+      const layoutConfig = getDefaultLayout();
 
       // Create Golden-Layout instance
       const goldenLayout = new GoldenLayout(
@@ -149,16 +171,14 @@ const WorkspaceLayout: React.FC = () => {
 
       // Register all panel component types
       Object.values(PanelType).forEach((panelType) => {
-        goldenLayout.registerComponentConstructor(panelType, () => {
-          // This is handled by bindComponent
-        });
+        goldenLayout.registerComponent(panelType, () => undefined);
       });
 
       // Listen for state changes
       goldenLayout.on('stateChanged', handleLayoutStateChanged);
 
       // Load the layout configuration
-      goldenLayout.loadLayout(layoutConfig);
+      goldenLayout.loadLayout(layoutConfig as LayoutConfig);
 
       // Mark as initialized
       setIsInitialized(true);
@@ -173,7 +193,6 @@ const WorkspaceLayout: React.FC = () => {
       setLayoutReady(false);
     }
   }, [
-    currentLayoutConfig,
     getDefaultLayout,
     bindComponent,
     unbindComponent,
@@ -194,16 +213,22 @@ const WorkspaceLayout: React.FC = () => {
   }, []);
 
   /**
-   * Initialize layout on mount
+   * Initialize layout on mount (after container is available)
    */
   useEffect(() => {
-    initializeLayout();
+    // Wait for next tick to ensure containerRef is mounted
+    const timer = setTimeout(() => {
+      if (containerRef.current && !goldenLayoutRef.current) {
+        initializeLayout();
+      }
+    }, 0);
 
     // Add resize listener
     window.addEventListener('resize', handleResize);
 
     // Cleanup on unmount
     return () => {
+      clearTimeout(timer);
       window.removeEventListener('resize', handleResize);
       
       // Cleanup all component refs
@@ -251,43 +276,37 @@ const WorkspaceLayout: React.FC = () => {
     };
   }, [getDefaultLayout]);
 
-  // Render error state
-  if (error) {
-    return (
-      <div className="workspace-layout-error">
-        <div className="error-content">
-          <span className="error-icon">⚠️</span>
-          <h3>{t('layout.initError')}</h3>
-          <p>{error}</p>
-          <button 
-            className="retry-button"
-            onClick={initializeLayout}
-          >
-            {t('layout.retry')}
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // Render loading state
-  if (!isInitialized) {
-    return (
-      <div className="workspace-layout-loading">
-        <div className="loading-content">
-          <div className="loading-spinner"></div>
-          <p>{t('layout.initializing')}</p>
-        </div>
-      </div>
-    );
-  }
-
+  // Always render the container, show overlay for error/loading states
   return (
     <div 
       ref={containerRef} 
       className="workspace-layout-container"
       data-testid="workspace-layout"
-    />
+    >
+      {error && (
+        <div className="workspace-layout-error">
+          <div className="error-content">
+            <span className="error-icon">⚠️</span>
+            <h3>{t('layout.initError')}</h3>
+            <p>{error}</p>
+            <button 
+              className="retry-button"
+              onClick={initializeLayout}
+            >
+              {t('layout.retry')}
+            </button>
+          </div>
+        </div>
+      )}
+      {!isInitialized && !error && (
+        <div className="workspace-layout-loading">
+          <div className="loading-content">
+            <div className="loading-spinner"></div>
+            <p>{t('layout.initializing')}</p>
+          </div>
+        </div>
+      )}
+    </div>
   );
 };
 

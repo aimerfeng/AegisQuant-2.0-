@@ -385,7 +385,7 @@ const DrawingTools: React.FC<DrawingToolsProps> = ({
   const renderPreview = () => {
     if (!isDrawing || !startPoint || !currentPoint) return null;
 
-    const previewDrawing: Drawing = (() => {
+    const previewDrawing: Drawing | null = (() => {
       switch (activeDrawingTool) {
         case DrawingToolType.TREND_LINE:
           return {

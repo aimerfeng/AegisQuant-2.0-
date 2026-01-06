@@ -774,7 +774,28 @@ class MessageHandlers:
             self._broadcast_callback(msg)
 
 
+def create_message_handlers() -> Dict[MessageType, Callable[[Message], Optional[Message]]]:
+    """
+    Create and return a dictionary of message handlers.
+    
+    This is a convenience function for initializing the server with
+    all available message handlers.
+    
+    Returns:
+        Dictionary mapping MessageType to handler functions.
+    
+    Example:
+        >>> handlers = create_message_handlers()
+        >>> for msg_type, handler in handlers.items():
+        ...     server.register_handler(msg_type, handler)
+    """
+    message_handlers = MessageHandlers()
+    router = message_handlers.create_router()
+    return router.get_handlers()
+
+
 __all__ = [
     "SystemState",
     "MessageHandlers",
+    "create_message_handlers",
 ]

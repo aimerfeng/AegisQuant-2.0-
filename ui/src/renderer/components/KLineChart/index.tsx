@@ -17,26 +17,19 @@ import {
   createChart,
   IChartApi,
   ISeriesApi,
-  CandlestickSeriesOptions,
-  HistogramSeriesOptions,
-  LineSeriesOptions,
   Time,
   CrosshairMode,
   LineStyle,
+  LineWidth,
   SeriesMarker,
   MouseEventParams,
 } from 'lightweight-charts';
 import {
   KLineChartProps,
-  CandlestickData,
-  VolumeData,
   TradeMarker,
-  TradeDetails,
-  Drawing,
   DrawingToolType,
   Indicator,
   IndicatorType,
-  ChartTheme,
   ChartState,
   darkTheme,
   MAConfig,
@@ -52,9 +45,7 @@ import {
   calculateBollingerBands,
   generateVolumeData,
   formatPrice,
-  formatVolume,
   formatPercent,
-  generateId,
 } from './utils';
 import './KLineChart.css';
 
@@ -354,7 +345,7 @@ const KLineChart: React.FC<KLineChartProps> = ({
           if (!series) {
             series = chartRef.current!.addLineSeries({
               color: config.color,
-              lineWidth: config.lineWidth,
+              lineWidth: config.lineWidth as LineWidth,
               priceScaleId: 'right',
             });
             indicatorSeriesRef.current.set(indicator.id, series);

@@ -1,0 +1,126 @@
+/**
+ * Trades Component Styles
+ */
+
+.trades-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: var(--spacing-sm);
+}
+
+.trades-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: var(--spacing-sm);
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: var(--spacing-sm);
+}
+
+.trades-title {
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.trades-count {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.trades-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  color: var(--color-text-secondary);
+  gap: var(--spacing-sm);
+}
+
+.empty-icon {
+  font-size: 2rem;
+  opacity: 0.5;
+}
+
+.trades-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  overflow-y: auto;
+}
+
+.trade-item {
+  background-color: var(--color-bg-tertiary);
+  border-radius: var(--border-radius-sm);
+  padding: var(--spacing-xs) var(--spacing-sm);
+}
+
+.trade-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.trade-info {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.trade-direction {
+  font-size: var(--font-size-xs);
+  padding: 1px 4px;
+  border-radius: 2px;
+  font-weight: 600;
+}
+
+.trade-direction.buy {
+  background-color: rgba(38, 166, 154, 0.2);
+  color: #26a69a;
+}
+
+.trade-direction.sell {
+  background-color: rgba(239, 83, 80, 0.2);
+  color: #ef5350;
+}
+
+.trade-symbol {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  font-weight: 500;
+}
+
+.trade-time {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.trade-details {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: var(--font-size-xs);
+}
+
+.trade-price {
+  color: var(--color-text-primary);
+}
+
+.trade-volume {
+  color: var(--color-text-secondary);
+}
+
+.trade-pnl {
+  margin-left: auto;
+  font-weight: 500;
+}
+
+.trade-pnl.profit {
+  color: var(--color-success);
+}
+
+.trade-pnl.loss {
+  color: var(--color-danger);
+}

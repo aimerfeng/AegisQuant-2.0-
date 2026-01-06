@@ -1,0 +1,169 @@
+/**
+ * Logs Component Styles
+ */
+
+.logs-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  font-family: 'Consolas', 'Monaco', monospace;
+}
+
+.logs-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background-color: var(--color-bg-tertiary);
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.filter-buttons {
+  display: flex;
+  gap: 4px;
+}
+
+.filter-btn {
+  padding: 2px 8px;
+  font-size: var(--font-size-xs);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-sm);
+  background-color: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.filter-btn:hover {
+  background-color: var(--color-bg-hover);
+}
+
+.filter-btn.active {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-text-inverse);
+}
+
+.filter-btn.log-level-info.active {
+  background-color: #2196f3;
+  border-color: #2196f3;
+}
+
+.filter-btn.log-level-warn.active {
+  background-color: #ff9800;
+  border-color: #ff9800;
+}
+
+.filter-btn.log-level-error.active {
+  background-color: #f44336;
+  border-color: #f44336;
+}
+
+.filter-btn.log-level-debug.active {
+  background-color: #9e9e9e;
+  border-color: #9e9e9e;
+}
+
+.logs-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.auto-scroll-toggle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.clear-btn {
+  padding: 2px 8px;
+  font-size: var(--font-size-xs);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-sm);
+  background-color: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.clear-btn:hover {
+  background-color: var(--color-bg-hover);
+}
+
+.logs-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-xs);
+  background-color: var(--color-bg-primary);
+}
+
+.logs-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.log-entry {
+  display: flex;
+  gap: var(--spacing-xs);
+  padding: 2px 4px;
+  font-size: 11px;
+  line-height: 1.4;
+  border-radius: 2px;
+}
+
+.log-entry:hover {
+  background-color: var(--color-bg-hover);
+}
+
+.log-timestamp {
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+}
+
+.log-level {
+  font-weight: 600;
+  flex-shrink: 0;
+  min-width: 45px;
+}
+
+.log-level.log-level-info {
+  color: #2196f3;
+}
+
+.log-level.log-level-warn {
+  color: #ff9800;
+}
+
+.log-level.log-level-error {
+  color: #f44336;
+}
+
+.log-level.log-level-debug {
+  color: #9e9e9e;
+}
+
+.log-source {
+  color: #9c27b0;
+  flex-shrink: 0;
+}
+
+.log-message {
+  color: var(--color-text-primary);
+  word-break: break-word;
+}
+
+.log-entry.log-level-error {
+  background-color: rgba(244, 67, 54, 0.1);
+}
+
+.log-entry.log-level-warn {
+  background-color: rgba(255, 152, 0, 0.05);
+}

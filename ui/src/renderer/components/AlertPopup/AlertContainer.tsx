@@ -12,7 +12,8 @@
 
 import React, { useEffect, useState } from 'react';
 import { useAlertStore, Alert } from '../../stores/alertStore';
-import { useConnectionStore } from '../../stores/connectionStore';
+import { useIntegration } from '../../hooks/useIntegration';
+import { getIntegrationService } from '../../services/integration';
 import { MessageType } from '../../types/websocket';
 import SyncAlertModal from './SyncAlertModal';
 import AlertToast from './AlertToast';
@@ -45,38 +46,13 @@ const AlertContainer: React.FC<AlertContainerProps> = ({
     alerts,
     pendingSyncAlert,
     showSyncModal,
-    addAlert,
     acknowledgeAlert,
-    dismissAlert,
   } = useAlertStore();
 
-  const { wsService } = useConnectionStore();
+  const { acknowledgeAlert: sendAcknowledge } = useIntegration();
 
   // Track displayed async toasts
   const [displayedToasts, setDisplayedToasts] = useState<Alert[]>([]);
-
-  // Subscribe to WebSocket alert messages
-  useEffect(() => {
-    if (!wsService) return;
-
-    const handleAlert = (message: { payload: unknown }) => {
-      const alertPayload = message.payload as {
-        alert_id: string;
-        alert_type: 'sync' | 'async';
-        severity: 'info' | 'warning' | 'error' | 'critical';
-        title: string;
-        message: string;
-        timestamp: string;
-      };
-      addAlert(alertPayload);
-    };
-
-    wsService.subscribe(MessageType.ALERT, handleAlert);
-
-    return () => {
-      wsService.unsubscribe(MessageType.ALERT, handleAlert);
-    };
-  }, [wsService, addAlert]);
 
   // Update displayed toasts when alerts change
   useEffect(() => {
@@ -87,12 +63,14 @@ const AlertContainer: React.FC<AlertContainerProps> = ({
   }, [alerts, maxToasts]);
 
   // Handle sync alert acknowledgment
-  const handleSyncAcknowledge = (alertId: string) => {
+  const handleSyncAcknowledge = async (alertId: string) => {
     acknowledgeAlert(alertId);
 
     // Send acknowledgment to server
-    if (wsService) {
-      wsService.send(MessageType.ALERT_ACK, { alert_id: alertId });
+    try {
+      await sendAcknowledge(alertId);
+    } catch (error) {
+      console.error('Failed to send alert acknowledgment:', error);
     }
   };
 

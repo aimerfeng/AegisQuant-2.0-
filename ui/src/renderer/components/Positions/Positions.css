@@ -1,0 +1,122 @@
+/**
+ * Positions Component Styles
+ */
+
+.positions-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: var(--spacing-sm);
+}
+
+.positions-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: var(--spacing-sm);
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: var(--spacing-sm);
+}
+
+.positions-title {
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.total-pnl {
+  font-weight: 600;
+  font-size: var(--font-size-sm);
+}
+
+.total-pnl.profit {
+  color: var(--color-success);
+}
+
+.total-pnl.loss {
+  color: var(--color-danger);
+}
+
+.positions-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  color: var(--color-text-secondary);
+  gap: var(--spacing-sm);
+}
+
+.empty-icon {
+  font-size: 2rem;
+  opacity: 0.5;
+}
+
+.positions-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  overflow-y: auto;
+}
+
+.position-item {
+  background-color: var(--color-bg-tertiary);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-sm);
+}
+
+.position-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-xs);
+}
+
+.position-symbol {
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.position-direction {
+  font-size: var(--font-size-xs);
+  padding: 2px 6px;
+  border-radius: var(--border-radius-sm);
+  font-weight: 500;
+}
+
+.position-direction.long {
+  background-color: rgba(38, 166, 154, 0.2);
+  color: #26a69a;
+}
+
+.position-direction.short {
+  background-color: rgba(239, 83, 80, 0.2);
+  color: #ef5350;
+}
+
+.position-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--font-size-xs);
+}
+
+.detail-row .label {
+  color: var(--color-text-secondary);
+}
+
+.detail-row .value {
+  color: var(--color-text-primary);
+}
+
+.detail-row .value.profit {
+  color: var(--color-success);
+}
+
+.detail-row .value.loss {
+  color: var(--color-danger);
+}

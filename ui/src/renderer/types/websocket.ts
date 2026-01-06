@@ -49,6 +49,13 @@ export enum MessageType {
   // System
   ERROR = 'error',
   STATUS = 'status',
+  
+  // State sync
+  STATE_SYNC = 'state_sync',
+  REQUEST_STATE = 'request_state',
+  
+  // Response
+  RESPONSE = 'response',
 }
 
 /**

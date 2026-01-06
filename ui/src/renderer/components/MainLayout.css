@@ -44,3 +44,143 @@
   overflow: hidden;
   position: relative;
 }
+
+/* Simple flexbox layout */
+.simple-layout {
+  display: flex;
+  flex-direction: row;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs);
+  height: 100%;
+  box-sizing: border-box;
+}
+
+/* Panel containers */
+.panel-container {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+}
+
+/* Sidebar sizing */
+.sidebar-left,
+.sidebar-right {
+  flex: 0 0 280px;
+  min-width: 200px;
+  max-width: 350px;
+}
+
+/* Main content area */
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  min-width: 400px;
+}
+
+.main-top {
+  flex: 2;
+  display: flex;
+  flex-direction: column;
+  min-height: 300px;
+}
+
+.main-bottom {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 150px;
+}
+
+.main-top .tab-panel,
+.main-bottom .tab-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Tab Panel Component */
+.tab-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: var(--color-bg-secondary);
+}
+
+.tab-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  padding: var(--spacing-xs);
+  background-color: var(--color-bg-tertiary);
+  border-bottom: 1px solid var(--color-border);
+  min-height: 32px;
+}
+
+.tab-button {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background-color: transparent;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.tab-button:hover {
+  background-color: var(--color-bg-hover);
+  color: var(--color-text-primary);
+}
+
+.tab-button.active {
+  background-color: var(--color-primary);
+  color: var(--color-text-inverse);
+}
+
+.tab-content {
+  flex: 1;
+  overflow: auto;
+  padding: var(--spacing-sm);
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .sidebar-left,
+  .sidebar-right {
+    flex: 0 0 240px;
+    min-width: 180px;
+  }
+}
+
+@media (max-width: 900px) {
+  .simple-layout {
+    flex-direction: column;
+  }
+  
+  .sidebar-left,
+  .sidebar-right {
+    flex: 0 0 auto;
+    max-width: none;
+    min-height: 200px;
+  }
+  
+  .main-content {
+    min-width: auto;
+  }
+}
+
+
+/* Control Panel Wrapper */
+.control-panel-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  height: 100%;
+  overflow: auto;
+}
