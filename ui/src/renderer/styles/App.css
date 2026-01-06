@@ -1,0 +1,107 @@
+/**
+ * Titan-Quant App Component Styles
+ */
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Header */
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: var(--color-bg-secondary);
+  border-bottom: 1px solid var(--color-border);
+  height: 48px;
+  flex-shrink: 0;
+}
+
+.app-title {
+  display: flex;
+  align-items: baseline;
+  gap: var(--spacing-md);
+}
+
+.app-title h1 {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.app-subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.app-status {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+/* Main content area */
+.app-main {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Footer */
+.app-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-xs) var(--spacing-md);
+  background-color: var(--color-bg-secondary);
+  border-top: 1px solid var(--color-border);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.language-indicator {
+  padding: 2px 6px;
+  background-color: var(--color-bg-tertiary);
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+}
+
+/* Connection status */
+.connection-status {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: var(--font-size-sm);
+}
+
+.connection-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--color-error);
+}
+
+.connection-indicator.connected {
+  background-color: var(--color-success);
+}
+
+.connection-indicator.connecting {
+  background-color: var(--color-warning);
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}

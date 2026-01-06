@@ -1,0 +1,161 @@
+/**
+ * Titan-Quant Global Styles
+ * 
+ * Base styles and CSS variables for the application.
+ */
+
+:root {
+  /* Color palette - Dark theme */
+  --color-bg-primary: #1e1e1e;
+  --color-bg-secondary: #252526;
+  --color-bg-tertiary: #2d2d30;
+  --color-bg-hover: #3e3e42;
+  --color-bg-active: #094771;
+  
+  --color-text-primary: #d4d4d4;
+  --color-text-secondary: #9d9d9d;
+  --color-text-muted: #6d6d6d;
+  
+  --color-border: #3e3e42;
+  --color-border-light: #454545;
+  
+  --color-accent: #0078d4;
+  --color-accent-hover: #1084d8;
+  
+  --color-success: #4caf50;
+  --color-warning: #ff9800;
+  --color-error: #f44336;
+  --color-info: #2196f3;
+  
+  /* Trading colors */
+  --color-long: #26a69a;
+  --color-short: #ef5350;
+  --color-profit: #4caf50;
+  --color-loss: #f44336;
+  
+  /* Spacing */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  
+  /* Border radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  
+  /* Font sizes */
+  --font-size-xs: 11px;
+  --font-size-sm: 12px;
+  --font-size-md: 14px;
+  --font-size-lg: 16px;
+  --font-size-xl: 20px;
+  
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  font-size: var(--font-size-md);
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  line-height: 1.5;
+}
+
+#root {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-border-light);
+}
+
+/* Selection styling */
+::selection {
+  background-color: var(--color-accent);
+  color: white;
+}
+
+/* Button base styles */
+button {
+  font-family: inherit;
+  font-size: var(--font-size-md);
+  cursor: pointer;
+  border: none;
+  outline: none;
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-sm);
+  transition: background-color var(--transition-fast);
+}
+
+button:hover {
+  background: var(--color-bg-hover);
+}
+
+button:active {
+  background: var(--color-bg-active);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Input base styles */
+input, select, textarea {
+  font-family: inherit;
+  font-size: var(--font-size-md);
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-sm);
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: var(--color-accent);
+}
+
+/* Link styles */
+a {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}

@@ -1,8 +1,8 @@
 """
 Data Governance and Provider Module
 
-This module provides data import, cleaning, storage, and provider functionality
-for the Titan-Quant system.
+This module provides data import, cleaning, storage, provider functionality,
+and database repository layer for the Titan-Quant system.
 """
 from core.data.importer import DataFormat, DataImporter, import_data
 from core.data.cleaner import (
@@ -38,6 +38,41 @@ from core.data.providers import (
     MySQLDataProvider,
     MongoDBDataProvider,
 )
+from core.data.repository import (
+    # Enums
+    UserRole,
+    BacktestStatus,
+    AlertType,
+    AlertSeverity,
+    ProviderType,
+    # Data Models
+    User,
+    ExchangeKey,
+    Strategy,
+    BacktestRecord,
+    BacktestResult,
+    Snapshot,
+    AlertConfig,
+    DataProvider,
+    # Database Manager
+    DatabaseManager,
+    get_database_manager,
+    reset_database_manager,
+    # Repositories
+    BaseRepository,
+    UserRepository,
+    ExchangeKeyRepository,
+    StrategyRepository,
+    BacktestRecordRepository,
+    BacktestResultRepository,
+    SnapshotRepository,
+    AlertConfigRepository,
+    DataProviderRepository,
+    # Factory
+    RepositoryFactory,
+    get_repository_factory,
+    reset_repository_factory,
+)
 
 __all__ = [
     # Importer
@@ -72,4 +107,37 @@ __all__ = [
     "ParquetDataProvider",
     "MySQLDataProvider",
     "MongoDBDataProvider",
+    # Repository Enums
+    "UserRole",
+    "BacktestStatus",
+    "AlertType",
+    "AlertSeverity",
+    "ProviderType",
+    # Repository Data Models
+    "User",
+    "ExchangeKey",
+    "Strategy",
+    "BacktestRecord",
+    "BacktestResult",
+    "Snapshot",
+    "AlertConfig",
+    "DataProvider",
+    # Database Manager
+    "DatabaseManager",
+    "get_database_manager",
+    "reset_database_manager",
+    # Repositories
+    "BaseRepository",
+    "UserRepository",
+    "ExchangeKeyRepository",
+    "StrategyRepository",
+    "BacktestRecordRepository",
+    "BacktestResultRepository",
+    "SnapshotRepository",
+    "AlertConfigRepository",
+    "DataProviderRepository",
+    # Repository Factory
+    "RepositoryFactory",
+    "get_repository_factory",
+    "reset_repository_factory",
 ]

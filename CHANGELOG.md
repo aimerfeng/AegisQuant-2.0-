@@ -7,6 +7,330 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [Task 28] 前端项目初始化 - 2026-01-06
+
+### Added
+- [Task 28.1] 创建 Electron + React 项目
+  - 初始化 ui/ 目录结构
+  - 创建 package.json 配置 (Electron 28, React 18, TypeScript 5.3)
+  - 创建 tsconfig.json TypeScript 配置
+  - 创建 webpack.main.config.js (Electron 主进程打包)
+  - 创建 webpack.renderer.config.js (React 渲染进程打包)
+  - 创建 src/main/main.ts (Electron 主进程入口)
+  - 创建 src/renderer/index.tsx (React 入口)
+  - 创建 src/renderer/App.tsx (主应用组件)
+  - 创建基础组件: MainLayout, ConnectionStatus
+  - 创建 Zustand stores: connectionStore, i18nStore
+  - 创建全局样式: global.css, App.css, MainLayout.css
+  - 配置 ESLint, Jest 测试框架
+  - 安装依赖: React, Zustand, Golden-Layout, Monaco Editor, Lightweight-charts
+  - 满足 Requirements: UI 技术栈
+
+- [Task 28.2] 实现 WebSocket 客户端服务
+  - 创建 src/renderer/services/websocket.ts
+  - 实现 WebSocketService 类:
+    - connect(), disconnect() 连接管理
+    - send() 消息发送 (支持离线队列)
+    - subscribe() 消息订阅 (按类型)
+    - 自动重连 (指数退避算法)
+    - 心跳检测 (ping-pong 机制)
+  - 创建 src/renderer/types/websocket.ts
+  - 实现 MessageType 枚举 (与后端协议一致)
+  - 实现消息类型定义: Message, StartBacktestPayload, ManualOrderPayload 等
+  - 满足 Requirements: 1.1, 1.4
+
+- [Task 28.3] 实现前端 I18N
+  - 创建 src/renderer/i18n/index.ts (i18next 配置)
+  - 集成 react-i18next
+  - 创建语言包文件:
+    - src/renderer/i18n/locales/en.json (英文)
+    - src/renderer/i18n/locales/zh_cn.json (简体中文)
+    - src/renderer/i18n/locales/zh_tw.json (繁体中文)
+  - 语言包包含: app, connection, layout, error, audit, alert, ui, status, matching, report 分类
+  - 与后端语言包 (config/i18n/) 保持一致
+  - 创建 LanguageSelector 组件
+  - 支持动态语言切换和本地存储
+  - 满足 Requirements: I18N 支持
+
+### Files Changed
+- ui/package.json (新增)
+- ui/tsconfig.json (新增)
+- ui/webpack.main.config.js (新增)
+- ui/webpack.renderer.config.js (新增)
+- ui/.eslintrc.json (新增)
+- ui/jest.config.js (新增)
+- ui/README.md (新增)
+- ui/src/main/main.ts (新增)
+- ui/src/renderer/index.html (新增)
+- ui/src/renderer/index.tsx (新增)
+- ui/src/renderer/App.tsx (新增)
+- ui/src/renderer/styles/global.css (新增)
+- ui/src/renderer/styles/App.css (新增)
+- ui/src/renderer/components/MainLayout.tsx (新增)
+- ui/src/renderer/components/MainLayout.css (新增)
+- ui/src/renderer/components/ConnectionStatus.tsx (新增)
+- ui/src/renderer/components/LanguageSelector.tsx (新增)
+- ui/src/renderer/components/LanguageSelector.css (新增)
+- ui/src/renderer/services/websocket.ts (新增)
+- ui/src/renderer/types/websocket.ts (新增)
+- ui/src/renderer/stores/connectionStore.ts (新增)
+- ui/src/renderer/stores/i18nStore.ts (新增)
+- ui/src/renderer/i18n/index.ts (新增)
+- ui/src/renderer/i18n/locales/en.json (新增)
+- ui/src/renderer/i18n/locales/zh_cn.json (新增)
+- ui/src/renderer/i18n/locales/zh_tw.json (新增)
+- ui/src/setupTests.ts (新增)
+- ui/.gitkeep (删除)
+
+## [Task 25] 手动交易功能 - 2026-01-05
+
+### Added
+- [Task 25.1] 实现手动下单接口
+  - 更新 core/handlers.py handle_manual_order() 方法
+  - 实现 MANUAL_ORDER 消息处理，支持市价单和限价单
+  - 订单自动标记为 is_manual=True (人工干预单)
+  - 支持字段验证: symbol, direction, offset, price, volume
+  - 与 MatchingEngine 集成，提交订单到撮合引擎
+  - 满足 Requirements 6.1, 6.2
+
+- [Task 25.2] 实现一键清仓
+  - 更新 core/handlers.py handle_close_all() 方法
+  - 实现 CLOSE_ALL 消息处理
+  - 为所有持仓生成市价平仓单 (price=0)
+  - 平仓方向自动取反 (LONG持仓 -> SHORT平仓)
+  - 所有平仓单标记为 is_manual=True
+  - 返回详细的平仓结果 (closed_count, closed_positions, errors)
+  - 满足 Requirements 6.4
+
+- [Task 25.3] 编写手动交易属性测试
+  - 创建 tests/test_manual_trading.py
+  - Property 11: Manual Order Marking
+    - 验证手动订单 is_manual=True
+    - 验证订单字段正确传递
+    - 验证手动订单与自动订单可区分
+  - Property 12: Close All Positions
+    - 验证为所有持仓生成平仓单
+    - 验证平仓方向正确取反
+    - 验证平仓数量与持仓数量一致
+    - 验证平仓单为市价单 (price=0)
+  - 包含输入验证单元测试
+  - 满足 Requirements 6.2, 6.3, 6.4
+
+### Changed
+- core/handlers.py: 增强 handle_manual_order() 和 handle_close_all() 实现
+
+### Files Changed
+- core/handlers.py
+- tests/test_manual_trading.py (新增)
+
+## [Task 24] WebSocket 通信层 - 2026-01-05
+
+### Added
+- [Task 24.1] 实现 WebSocket 服务端
+  - 创建 core/server.py
+  - 实现 MessageType 枚举 (CONNECT, DISCONNECT, HEARTBEAT, START_BACKTEST, PAUSE, RESUME, STEP, STOP, TICK_UPDATE, BAR_UPDATE, ORDER_UPDATE, TRADE_UPDATE, POSITION_UPDATE, ACCOUNT_UPDATE, ALERT, LOAD_STRATEGY, RELOAD_STRATEGY, UPDATE_PARAMS, MANUAL_ORDER, CANCEL_ORDER, CLOSE_ALL, SAVE_SNAPSHOT, LOAD_SNAPSHOT, ALERT_ACK, REQUEST_STATE, STATE_SYNC, ERROR)
+  - 实现 Message dataclass (消息封装: type, payload, timestamp, message_id, correlation_id)
+  - 实现 ClientInfo dataclass (客户端信息: client_id, websocket, connected_at, last_heartbeat)
+  - 实现 ServerConfig dataclass (服务器配置: host, port, heartbeat_interval, heartbeat_timeout, max_clients)
+  - 实现 IWebSocketServer 抽象接口
+  - 实现 WebSocketServer 类:
+    - start(), stop() 服务器生命周期管理
+    - register_handler() 注册消息处理器
+    - broadcast() 广播消息到所有客户端
+    - send_to_client() 发送消息到指定客户端
+    - get_connected_clients() 获取已连接客户端列表
+    - _handle_client() 处理客户端连接
+    - _heartbeat_checker() 心跳检测后台任务
+    - _route_message() 消息路由到注册的处理器
+  - 实现 MessageRouter 辅助类 (消息路由管理)
+  - 实现 ServerThread 类 (后台线程运行服务器)
+  - 实现 run_server(), run_server_async() 便捷函数
+  - 改动文件: core/server.py
+
+- [Task 24.2] 实现消息处理器
+  - 创建 core/handlers.py
+  - 实现 SystemState dataclass (系统状态: backtest_state, current_time, progress, positions, account, alerts)
+  - 实现 MessageHandlers 类:
+    - 回测控制: handle_start_backtest(), handle_pause(), handle_resume(), handle_step(), handle_stop()
+    - 策略操作: handle_load_strategy(), handle_reload_strategy(), handle_update_params()
+    - 手动交易: handle_manual_order(), handle_cancel_order(), handle_close_all()
+    - 快照管理: handle_save_snapshot(), handle_load_snapshot()
+    - 告警处理: handle_alert_ack()
+    - 状态同步: handle_request_state()
+  - 与 EventBus, ReplayController, SnapshotManager, StrategyManager 集成
+  - 改动文件: core/handlers.py
+
+- 更新 core/__init__.py 导出 WebSocket 相关类型
+  - 导出: MessageType, Message, ClientInfo, ServerConfig
+  - 导出: IWebSocketServer, WebSocketServer, MessageRouter, ServerThread
+  - 导出: run_server, run_server_async
+  - 导出: SystemState, MessageHandlers
+  - 改动文件: core/__init__.py
+
+- 创建 tests/test_websocket_server.py 测试文件
+  - TestMessageType: 测试消息类型枚举
+  - TestMessage: 测试消息序列化/反序列化
+  - TestClientInfo: 测试客户端信息
+  - TestServerConfig: 测试服务器配置
+  - TestMessageRouter: 测试消息路由
+  - TestWebSocketServer: 测试服务器功能
+  - 共 35 个测试全部通过
+  - 改动文件: tests/test_websocket_server.py
+
+- 创建 tests/test_message_handlers.py 测试文件
+  - TestSystemState: 测试系统状态
+  - TestMessageHandlersBacktestControl: 测试回测控制处理器
+  - TestMessageHandlersStrategyOperations: 测试策略操作处理器
+  - TestMessageHandlersManualTrading: 测试手动交易处理器
+  - TestMessageHandlersSnapshot: 测试快照处理器
+  - TestMessageHandlersAlert: 测试告警处理器
+  - TestMessageHandlersStateSync: 测试状态同步处理器
+  - 共 32 个测试全部通过
+  - 改动文件: tests/test_message_handlers.py
+
+## [Task 23] 数据库层 - 2026-01-05
+
+### Added
+- [Task 23.1] 实现 SQLite Schema
+  - 创建 database/schema.sql
+  - 实现 users 表 (用户账户: user_id, username, password_hash, role, settings, preferred_language)
+  - 实现 exchange_keys 表 (API密钥: 加密存储, 权限管理, 多交易所支持)
+  - 实现 strategies 表 (策略元数据: name, class_name, file_path, parameters, checksum)
+  - 实现 backtest_records 表 (回测记录: strategy_id, start/end_date, initial_capital, matching_mode, status)
+  - 实现 backtest_results 表 (回测结果: total_return, sharpe_ratio, max_drawdown, win_rate, metrics_json)
+  - 实现 snapshots 表 (快照: backtest_id, version, file_path, data_timestamp)
+  - 实现 alert_configs 表 (告警配置: event_type, alert_type, channels, severity, enabled)
+  - 实现 data_providers 表 (数据源配置: provider_type, name, connection_config, is_default)
+  - 实现索引优化 (username, user_id, strategy_id, status, event_type 等)
+  - 实现触发器:
+    - ensure_single_default_provider: 确保只有一个默认数据源
+    - update_*_timestamp: 自动更新 updated_at 字段
+  - 改动文件: database/schema.sql
+
+- [Task 23.2] 实现数据访问层
+  - 创建 core/data/repository.py
+  - 实现枚举类型:
+    - UserRole (admin, trader)
+    - BacktestStatus (running, paused, completed, failed)
+    - AlertType (sync, async)
+    - AlertSeverity (info, warning, error, critical)
+    - ProviderType (parquet, mysql, mongodb, dolphindb)
+  - 实现数据模型:
+    - User, ExchangeKey, Strategy, BacktestRecord, BacktestResult
+    - Snapshot, AlertConfig, DataProvider
+  - 实现 DatabaseManager 类:
+    - 单例模式数据库连接管理
+    - get_connection() 获取连接
+    - transaction() 事务支持
+    - initialize_database() 初始化数据库
+  - 实现 BaseRepository 抽象基类:
+    - 通用 CRUD 操作模板
+    - 日期时间解析和格式化
+    - UUID 生成
+  - 实现 Repository 类:
+    - UserRepository: create, get_by_id, get_by_username, get_all, update, update_last_login, delete
+    - ExchangeKeyRepository: create, get_by_id, get_by_user_id, get_by_exchange, get_active_keys, update, deactivate, delete
+    - StrategyRepository: create, get_by_id, get_by_name, get_by_class_name, get_all, update, delete
+    - BacktestRecordRepository: create, get_by_id, get_by_strategy_id, get_by_status, get_all, update_status, update, delete
+    - BacktestResultRepository: create, get_by_id, get_by_backtest_id, get_all, update, delete
+    - SnapshotRepository: create, get_by_id, get_by_backtest_id, get_latest_by_backtest_id, get_all, delete, delete_by_backtest_id
+    - AlertConfigRepository: create, get_by_id, get_by_event_type, get_enabled, get_all, update, set_enabled, delete
+    - DataProviderRepository: create, get_by_id, get_by_name, get_by_type, get_default, get_all, update, set_default, delete
+  - 实现 RepositoryFactory 工厂类:
+    - 集中管理所有 Repository 实例
+    - 共享数据库连接
+  - 实现全局函数:
+    - get_database_manager(), reset_database_manager()
+    - get_repository_factory(), reset_repository_factory()
+  - 改动文件: core/data/repository.py
+
+- 更新 core/data/__init__.py 导出数据库相关类型
+  - 导出: UserRole, BacktestStatus, AlertType, AlertSeverity, ProviderType
+  - 导出: User, ExchangeKey, Strategy, BacktestRecord, BacktestResult, Snapshot, AlertConfig, DataProvider
+  - 导出: DatabaseManager, get_database_manager, reset_database_manager
+  - 导出: BaseRepository, UserRepository, ExchangeKeyRepository, StrategyRepository
+  - 导出: BacktestRecordRepository, BacktestResultRepository, SnapshotRepository
+  - 导出: AlertConfigRepository, DataProviderRepository
+  - 导出: RepositoryFactory, get_repository_factory, reset_repository_factory
+  - 改动文件: core/data/__init__.py
+
+- 创建 tests/test_repository.py 测试文件
+  - TestUserRepository: 测试用户 CRUD 操作
+  - TestExchangeKeyRepository: 测试 API 密钥 CRUD 操作
+  - TestStrategyRepository: 测试策略 CRUD 操作
+  - TestBacktestRecordRepository: 测试回测记录 CRUD 操作
+  - TestBacktestResultRepository: 测试回测结果 CRUD 操作
+  - TestSnapshotRepository: 测试快照 CRUD 操作
+  - TestAlertConfigRepository: 测试告警配置 CRUD 操作
+  - TestDataProviderRepository: 测试数据源配置 CRUD 操作
+  - TestRepositoryFactory: 测试工厂类
+  - 共 22 个测试全部通过
+  - 改动文件: tests/test_repository.py
+
+## [Task 21] 国际化模块 - 2026-01-05
+
+### Added
+- [Task 21.1] 实现 I18nManager 类
+  - 创建 utils/i18n.py
+  - 实现 Language 枚举 (EN, ZH_CN, ZH_TW, JA)
+  - 实现 I18nConfig dataclass (国际化配置)
+  - 实现 II18nManager 抽象接口
+  - 实现 I18nManager 类:
+    - load_language_pack(): 加载语言包 JSON 文件
+    - set_language(): 设置当前语言
+    - get_current_language(): 获取当前语言
+    - translate(): 翻译文本，支持参数插值
+    - get_all_keys(): 获取所有翻译键
+    - has_key(): 检查翻译键是否存在
+    - get_available_languages(): 获取已加载的语言列表
+    - reload_language_packs(): 重新加载所有语言包
+  - 实现线程安全的单例模式
+  - 实现 fallback 语言支持
+  - 改动文件: utils/i18n.py
+
+- [Task 21.2] 创建语言包文件
+  - 创建 config/i18n/en.json (英文语言包)
+  - 创建 config/i18n/zh_cn.json (简体中文语言包)
+  - 创建 config/i18n/zh_tw.json (繁体中文语言包)
+  - 包含以下翻译类别:
+    - error: 错误信息 (insufficient_fund, order_rejected, strategy_error, etc.)
+    - audit: 审计日志类型 (manual_trade, param_change, strategy_reload, etc.)
+    - alert: 告警消息 (risk_trigger, backtest_complete, strategy_error, etc.)
+    - ui: UI 标签 (login, logout, start_backtest, etc.)
+    - status: 状态消息 (running, paused, completed, etc.)
+    - matching: 撮合模式说明 (l1_mode, l2_level1, limitation_*, etc.)
+    - report: 报告标签 (title, summary, total_return, etc.)
+  - 改动文件: config/i18n/en.json, config/i18n/zh_cn.json, config/i18n/zh_tw.json
+
+- [Task 21.3] 集成 I18N 到各模块
+  - 实现 I18nKeys 常量类 (标准 I18N 键定义)
+  - 实现集成辅助函数:
+    - translate_error(): 翻译错误消息
+    - translate_audit(): 翻译审计日志类型
+    - translate_alert(): 翻译告警消息
+    - translate_status(): 翻译状态消息
+    - translate_ui(): 翻译 UI 标签
+    - get_localized_action_type(): 获取本地化的操作类型名称
+    - get_localized_alert_event(): 获取本地化的告警事件名称
+  - 实现便捷函数:
+    - translate(): 使用单例翻译
+    - set_language(): 设置当前语言
+    - get_current_language(): 获取当前语言
+    - get_i18n_manager(): 获取单例实例
+    - set_i18n_manager(): 设置自定义实例
+    - reset_i18n_manager(): 重置单例
+  - 更新 utils/__init__.py 导出所有 I18N 相关类型
+  - 改动文件: utils/i18n.py, utils/__init__.py
+
+- 创建 tests/test_i18n.py 测试文件
+  - TestI18nManager: 测试 I18nManager 类功能
+  - TestSingletonFunctions: 测试单例便捷函数
+  - TestIntegrationHelpers: 测试集成辅助函数
+  - TestI18nKeys: 测试 I18nKeys 常量
+  - TestRealLanguagePacks: 测试真实语言包文件
+  - 共 33 个测试全部通过
+  - 改动文件: tests/test_i18n.py
+
 ### Technical Debt Resolution (2026-01-05)
 
 #### TD-001: Decimal Migration for Financial Precision (HIGH Priority) ✅
@@ -721,6 +1045,79 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 测试执行时间: 103.23s
 
 
+## [Task 19] 参数优化器模块 - 2026-01-05
+
+### Added
+- [Task 19.1] 实现 Optuna 集成
+  - 创建 core/optimizer.py
+  - 实现 OptimizerError 异常类
+  - 实现 OptimizationObjective 枚举 (SHARPE_RATIO, TOTAL_RETURN, MAX_DRAWDOWN, WIN_RATE, PROFIT_FACTOR, CALMAR_RATIO, SORTINO_RATIO)
+  - 实现 OptimizationAlgorithm 枚举 (TPE, CMA_ES, NSGA_II, GRID, RANDOM)
+  - 实现 ParameterType 枚举 (INT, FLOAT, CATEGORICAL, LOG_FLOAT)
+  - 实现 ParameterRange dataclass (参数范围定义: name, param_type, low, high, step, choices)
+  - 实现 OptimizationConfig dataclass (优化配置: parameter_ranges, objective, algorithm, n_trials, n_jobs, timeout, seed)
+  - 实现 OptimizationResult dataclass (单次试验结果: trial_number, params, value, metrics, duration, status)
+  - 实现 OptimizationSummary dataclass (优化总结: best_params, best_value, all_results, statistics)
+  - 实现 IOptimizer 抽象接口
+  - 实现 ParameterOptimizer 类:
+    - optimize(): 运行参数优化
+    - get_parameter_importance(): 获取参数重要性评分
+    - get_optimization_history(): 获取优化历史
+    - stop(): 停止当前优化
+    - validate_params_in_bounds(): 验证参数是否在范围内
+  - 实现便捷函数: int_range(), float_range(), categorical()
+  - 改动文件: core/optimizer.py
+
+- [Task 19.2] 实现多进程并行优化
+  - 实现 ProcessIsolatedOptimizer 类:
+    - 使用 ProcessPoolExecutor 实现进程隔离
+    - 使用 spawn 上下文确保跨平台兼容性
+    - 支持 trial_timeout 超时控制
+    - 支持 shutdown() 优雅关闭
+  - 实现 _run_trial_in_process() 隔离执行函数:
+    - 每个试验在独立进程中运行
+    - 进程崩溃不影响其他试验
+    - 支持信号处理 (SIGTERM)
+    - 完整的错误追踪和报告
+  - 实现 _run_parallel_optimization() 并行优化方法:
+    - 批量提交试验到进程池
+    - 收集结果并更新 Optuna study
+    - 处理超时、崩溃、失败等异常情况
+  - 改动文件: core/optimizer.py
+
+- [Task 19.3] 编写优化器属性测试
+  - 创建 tests/test_optimizer.py
+  - Property 16: Optimizer Parameter Bounds ✓ PASSED
+    - test_int_parameter_bounds: 测试整数参数在范围内
+    - test_float_parameter_bounds: 测试浮点参数在范围内
+    - test_categorical_parameter_bounds: 测试分类参数在选项内
+    - test_multiple_parameters_bounds: 测试多参数组合在范围内
+    - test_property_all_results_within_bounds: Hypothesis 属性测试
+    - test_validate_params_in_bounds_method: 测试验证方法
+  - 单元测试:
+    - ParameterRange 验证 (int, float, categorical)
+    - 无效范围抛出错误
+    - OptimizationConfig 创建和序列化
+    - MAX_DRAWDOWN 自动设置 minimize 方向
+    - 简单优化运行
+    - 回调函数支持
+    - 优化历史获取
+    - 失败试验处理
+    - 便捷函数 (int_range, float_range, categorical)
+  - 改动文件: tests/test_optimizer.py
+
+- 更新 core/__init__.py 导出优化器相关类型
+  - 导出: ParameterOptimizer, OptimizationConfig, OptimizationObjective, OptimizationAlgorithm
+  - 导出: ParameterRange, ParameterType, OptimizationResult, OptimizationSummary
+  - 导出: int_range, float_range, categorical
+  - 改动文件: core/__init__.py
+
+### Verified
+- ✅ 所有 215 个测试通过
+- ✅ Property 16: Optimizer Parameter Bounds (6 sub-tests)
+- 测试执行时间: 209.50s
+
+
 ## [Task 16] 告警系统模块 - 2026-01-05
 
 ### Added
@@ -817,3 +1214,78 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 **状态:** 后端核心功能完成 (Tasks 1-16)，已批准进入 UI 实现阶段 (Tasks 17+)
 
 📝 添加架构审计文档: docs/audit/2026-01-05-task16-alert-system-audit.md
+
+
+## [Task 20] 回测报告生成模块 - 2026-01-05
+
+### Added
+- [Task 20.1] 实现报告数据计算
+  - 创建 core/report.py
+  - 实现 EquityPoint dataclass (资金曲线点: timestamp, equity, cash, position_value, drawdown)
+  - 实现 BacktestMetrics dataclass (回测指标):
+    - 必需指标: sharpe_ratio, max_drawdown, total_return, win_rate, profit_factor, total_trades
+    - 附加指标: annualized_return, volatility, calmar_ratio, sortino_ratio
+    - 交易统计: avg_win, avg_loss, max_win, max_loss, winning_trades, losing_trades
+    - 元数据: start_date, end_date, initial_capital, final_equity
+  - 实现 BacktestReport dataclass (完整报告: metrics, trades, equity_curve)
+  - 实现 MetricsCalculator 类:
+    - calculate_metrics(): 从交易和资金曲线计算所有指标
+    - _calculate_trade_metrics(): 计算交易相关指标 (胜率、盈亏比等)
+    - _calculate_equity_metrics(): 计算资金曲线指标 (夏普、回撤等)
+    - _calculate_trade_pnl(): 计算每笔交易盈亏 (FIFO 匹配)
+    - _calculate_returns(): 计算收益率序列
+    - _calculate_max_drawdown(): 计算最大回撤
+    - _calculate_volatility(): 计算年化波动率
+    - _calculate_sharpe_ratio(): 计算夏普比率
+    - _calculate_sortino_ratio(): 计算索提诺比率
+  - 改动文件: core/report.py
+
+- [Task 20.2] 实现 HTML 报告生成
+  - 实现 ReportGenerator 类:
+    - generate_report(): 生成完整回测报告
+    - save_report(): 保存报告到磁盘
+    - _generate_html_report(): 生成交互式 HTML 报告
+    - _generate_trades_csv(): 生成 trades.csv 交易记录
+    - _generate_metrics_json(): 生成 metrics.json 指标文件
+  - HTML 报告特性:
+    - 响应式深色主题设计
+    - 12 个关键指标卡片 (总收益、夏普、回撤、胜率等)
+    - Chart.js 资金曲线图 (交互式缩放)
+    - Chart.js 回撤曲线图 (反向 Y 轴)
+    - 交易记录表格 (前 100 条，完整数据见 CSV)
+    - 支持中文显示
+  - 报告目录结构: reports/{backtest_id}/
+    - report.html: 交互式 HTML 报告
+    - trades.csv: 完整交易记录
+    - metrics.json: 完整指标数据
+  - 改动文件: core/report.py
+
+- [Task 20.3] 编写报告属性测试
+  - 创建 tests/test_report.py
+  - Property 25: Report Metrics Completeness ✓ PASSED
+    - test_property_report_metrics_completeness: Hypothesis 属性测试
+      - 验证所有生成的报告包含必需指标
+      - 验证指标值有效 (非 NaN, 范围正确)
+      - 验证 has_required_metrics() 返回 True
+    - test_empty_backtest_has_required_metrics: 空回测也有完整指标
+    - test_get_required_metrics_returns_all_required: 验证必需指标字段
+  - 单元测试:
+    - MetricsCalculator: 夏普比率、最大回撤、胜率、盈亏比计算
+    - ReportGenerator: 报告生成、文件保存、CSV 内容验证
+    - BacktestMetrics: 序列化往返、NaN 检测、负值检测
+    - EquityPoint: 序列化
+  - 自定义 Hypothesis 策略:
+    - trade_record_strategy: 生成有效 TradeRecord
+    - equity_point_strategy: 生成有效 EquityPoint
+    - equity_curve_strategy: 生成有效资金曲线 (带随机游走)
+    - trade_list_strategy: 生成配对的 OPEN/CLOSE 交易
+  - 改动文件: tests/test_report.py
+
+- 更新 core/__init__.py 导出报告相关类型
+  - 导出: EquityPoint, BacktestMetrics, BacktestReport, MetricsCalculator, ReportGenerator
+  - 改动文件: core/__init__.py
+
+### Verified
+- ✅ 所有 14 个报告模块测试通过
+- ✅ Property 25: Report Metrics Completeness (Hypothesis 100 examples)
+- 测试执行时间: 2.86s

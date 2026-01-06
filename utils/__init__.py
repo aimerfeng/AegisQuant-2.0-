@@ -56,6 +56,35 @@ from utils.notifier import (
     send_async_alert,
 )
 
+from utils.i18n import (
+    # Enums
+    Language,
+    # Data classes
+    I18nConfig,
+    # Interfaces
+    II18nManager,
+    # Implementation
+    I18nManager,
+    # Singleton functions
+    get_i18n_manager,
+    set_i18n_manager,
+    reset_i18n_manager,
+    # Convenience functions
+    translate,
+    set_language,
+    get_current_language,
+    # Keys
+    I18nKeys,
+    # Integration helpers
+    translate_error,
+    translate_audit,
+    translate_alert,
+    translate_status,
+    translate_ui,
+    get_localized_action_type,
+    get_localized_alert_event,
+)
+
 __all__ = [
     # Audit Logger
     "ActionType",
@@ -95,4 +124,23 @@ __all__ = [
     "set_alert_system",
     "send_sync_alert",
     "send_async_alert",
+    # I18N
+    "Language",
+    "I18nConfig",
+    "II18nManager",
+    "I18nManager",
+    "get_i18n_manager",
+    "set_i18n_manager",
+    "reset_i18n_manager",
+    "translate",
+    "set_language",
+    "get_current_language",
+    "I18nKeys",
+    "translate_error",
+    "translate_audit",
+    "translate_alert",
+    "translate_status",
+    "translate_ui",
+    "get_localized_action_type",
+    "get_localized_alert_event",
 ]
